@@ -1,0 +1,68 @@
+rendering     - 3D to 2D
+all objects   = empty shells
+rasterization - real time graphics hardware (lots of fakery)
+ -step 1
+  -transform everything into clip space
+  -clip coords
+    -pos of triangle's vertices in clip space
+    -has W
+  -normalized device coords
+    -clip -> norm
+    -norm(x, y, z) = (xyz)/w
+    -range(xyz) = [-1, 1]
+  -window coords
+    -range(z) = [0, 1]
+
+-The framework file expects 5 functions to be defined: defaults, init, display, reshape, and keyboard.
+   -defaults() is called before FreeGLUT.
+   -init()     is called before OpenGL is initialized.
+   -reshape()  is called by FreeGLUT when window resizes.
+   -display()  is called when FreeGLUT deletects screen needs to be rendered to
+               -called on resize (continuously).
+               -call glutSwapBuffers() at the end.
+               -call glutPostRedisplay() if need continuousl update.
+
+in display:
+   OGL: glUseProgram(GLuint prog)
+
+-------------------------------------
+struct Val {
+   int iValue1, iValue2;
+   int count; float opacity; char *name;
+};
+struct OpenGL_Context {
+   ...
+   Val *pMainValues, *pOtherValues, *pModValues;
+   ...
+};
+-------------------------------------
+GLuint objName;               //stores "objects"
+glGenVal(1, &objName);        //if multiple, objName is array
+glBindVal(GL_MOD, objName);   //put data in it
+glBindVal(GL_MOD, 0);         //unbinds
+
+glValParameteri(GL_MOD, GL_VAL_COUNT,   5);
+glValParameterf(GL_MOD, GL_VAL_OPACITY, 0.4f);
+glValParameters(GL_MOD, GL_VAL_NAME,    "Some String");
+glValParam(GL_MOD, GL_VAL_TWO) //-> iValue2
+glValData(GL_MOD)....
+glBufferData(GL_ARRAY_BUFFER, sizeof(arr[float]), arr, GL_STA);
+-------------------------------------
+glGen*       - Gen new object, * is type of object.
+glBind*      - Binds object to specific context.
+GL_OBJECT_*  - Names fields inside object.
+GL*Parameter - Sets parameter of object in current context.
+-------------------------------------
+-OpenGL context is a state machine, similar to struct.
+-glEnable* glDisable*
+   -VertexAttribArray(0)
+-glGen*
+   -VertexArrays(1, &vao)
+-glBind*
+   -VertexArray(vao)
+   -Buffer(GL_ARRAY_BUFFER, uint)
+-glClear*
+   -Color(0.0f, 0.0f, 0.0f, 0.0f)
+   -(GL_COLOR_BUFFER_BIT)
+
+

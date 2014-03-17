@@ -1,0 +1,75 @@
+utils.scm
+   assert (a|stat-ok|stat-bad)->(a|err)
+
+gio.scm
+   new file                (filename->ptr <"file.name">)
+   pointer reader          (pointer-reader <file>)
+
+blend_format.scm
+   blend-file              filename->ptr
+   blend-ptr               pointer-reader
+
+ptr-size                   8
+
+blend-db
+   id                      "BLENDER"
+   ptr-size                (8 "-")
+   endianness              ("little" "v")
+   version                 "269"
+   blocks                  (<blk-dbs>)
+
+sdna-db
+   id                      "SDNA"
+   name-id                 "NAME"
+   num-names               ~3798
+   names(*)
+   type-id                 "TYPE"
+   num-types               ~626
+   types(*)
+   tlen-id                 "TLEN"
+   tlens                   (112 128 ...)
+   strc-id                 "STRC"
+   num-strcs               ~551
+   structs-i               ((type-index (field-type-index field-name-index)))
+   structs-s               ((type (field name)))
+
+(make-struct type fields)  (s-type (f-type f-name) (f-type f-name))
+(struct-type   struct)
+(struct-fields struct)
+
+(make-field type name)     (type name)
+(field-type field)
+(field-name field)
+
+(print-field   field)
+(print-struct  struct)
+
+(read&store pointer-reader                      ptr,
+            ((u)int|str|ptr)                    type,
+            int                                 type-size,
+            int                                 num,
+            database                            db,
+            store_name                          name-in-db,
+            function:(a)->(b|stat-ok|stat-bad)  format)
+
+(read-blk)                 (database str4          'name,
+                                     int4          'size,
+                                     void*         'old-ptr,
+                                     int4          'sdna-index,
+                                     int4          'count-struct,
+                                     void*blk-size 'blk-content)
+
+(read-blocks)              -> 'ok; adds ('blocks) to blend-db
+(parse-sdna)               -> 'ok; adds ('structs-i) to sdna-db
+(sdna-index-to-string)     -> 'ok; adds ('structs-s) to sdna-db
+(parse-blocks)             prints block-header name and corresponding sdna name
+
+(start)
+
+get-by-name name           sdna
+print-structs              prints sdnas
+print-dan                  sdna block header
+print-header               print file header
+
+
+

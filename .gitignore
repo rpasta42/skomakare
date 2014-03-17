@@ -1,0 +1,9 @@
+bin/
+obj/
+Media/
+*~
+*.obj
+*cfg
+skomakare.cbp
+skomakare.layout
+skomakare.depend
