@@ -80,13 +80,7 @@ static void b_read_file_blocks(struct b_file *b_file)
 }
 static void b_print_file_blocks(struct b_file *b_file)
 {
-  //int i;
   printf("\n***blocks***\nnumber of blocks: %i\n\n", b_file->num_blocks);
-  /*for (i = 0; i < num_blocks; i++) {
-    printf("\tblock %.4s has size %i; sdna index %u; count structs %i\n",
-           blocks[i].name, blocks[i].size, blocks[i].sdna_index, blocks[i].count_structs);
-  }
-  printf("\n");*/
 }
 static void b_parse_sdna(struct b_file *b_file)
 {
@@ -247,12 +241,6 @@ Skmk_object* load_blend_file(const char* file_path)
 
   b_read_file_blocks(b_file);
 
-  /*printf("%p\n", b_file->blocks[0].data);
-  printf("%p\n", b_file->blocks[1].data);
-  printf("%p\n", b_file->blocks[2].data);
-  printf("%p\n", b_file->blocks[3].data);
-  printf("%p\n", b_file->blocks[4].data);*/
-
   b_print_file_blocks(b_file);
 
   for (i = 0; i < b_file->num_blocks; i++) {
@@ -288,16 +276,6 @@ Skmk_object* load_blend_file(const char* file_path)
               blk->sdna_index, blk->count_structs);
   }
   fprintf(sexps_blocks, "\n)\n");
-
-  /*for (i = 0; i < sdna->num_names; i++) {
-    if (misc_info->num_dimensions[i]) {
-      printf("\n%s has %i dimensions:\n", sdna->names[i], misc_info->num_dimensions[i]);
-      for (j = 0; j < misc_info->num_dimensions[i]; j++) {
-        printf("%i ", misc_info->arr_dimensions[i][j]);
-        //CHECK(1000, debug_kk, "hi");
-      }
-    }
-  }*/
 
   return NULL;
 }
@@ -357,31 +335,8 @@ here:;
         field_sdna_in = j;
     }
     b_parse_type(b_file, tabbing, ptrs, field_sdna_in, sdna->names[field_names[i]], field_names[i]);
-    //tab("\n", "", tabbing);
-    //write_blend_sexps(str);
-    //sprintf(str, "(%s %s)",
-    //        sdna->types[sdna->field_type_in[sdna_in][j]],
-    //        sdna->names[sdna->field_name_in[sdna_in][j]]);
-    //write_blend_sexps(str);
   }
   fprintf(sexps_parsed_data_file, ")");
-  /*for (j = 0; j < blk->count_structs; j++) {
-    CHECK(n, "test2\n")
-  }
-  /* int  char  short  void  float  double  int64_t  long  uchar  ushort  uint64_t  ulong /
-  else {
-    //if (0 == strcmp(sdna->type_in[i], sdna->types[type]))
-    int i;
-
-    bool compound = false;
-
-    for (i = 0; i < sdna->num_strcs; i++) {
-      if (sdna->type_in[i] == type) {
-        compound = true;
-        break;
-      }
-    }
-  }*/
 }
 #endif
 
@@ -418,11 +373,6 @@ void b_parse_type(struct b_file* b_file, int type_in, int tabbing, bool ptr)
   int i, j;
   struct b_sdna      *sdna      = b_file->sdna;
   struct b_misc_info *misc_info = &b_file->misc_info;
-
-  //printf("%i", b_file->sdna->each_type_len[type_in]);
-  //!!!!!!!!!!!!!!! tab(sexps_parsed_data_file, "", "", tabbing);
-  //printf("*");
-  //fprintf(sexps_parsed_data_file, " *%u* ", b_file->sdna->tlens[type_in]);
 
   char *type_str = sdna->types[type_in];
   if (ptr)
@@ -476,10 +426,6 @@ void b_parse_type(struct b_file* b_file, int type_in, int tabbing, bool ptr)
           break;
         }
       }
-      /*kkdel
-      if (is_field_ptr)
-        fprintf(sexps_parsed_data_file, "!this field is fucking pointers%s!", sdna->names[field_name_in]);*/
-      //int num_D = misc_info->num_dimensions[field_name_in];
       b_parse_type_helper_rec(0, b_file, tabbing, field_type_in, field_name_in, is_field_ptr);
     }
     fprintf(sexps_parsed_data_file, ")\n");
@@ -535,10 +481,7 @@ void b_parse_file_blocks(struct b_file* b_file)
     //fflush(sexps_parsed_data_file);
   }
   fprintf(sexps_parsed_data_file, ")");
-    /*if (strncmp("SC\0\0", blk->name, 4) == 0) {
-      printf("\n\n%i %.4s\n", i, blk->name);
-      printf("sdna index: %i", sdna->struct_type_in[blk->sdna_index]);
-    }*/
+
 }
 
 
@@ -639,9 +582,5 @@ void find_ptrs(struct b_file *b_file)
   b_file->misc_info.ptrs = ptr_indexes;
   b_file->misc_info.num_ptrs = len;
 }
-
-
-
-
 
 
