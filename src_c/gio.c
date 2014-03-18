@@ -177,16 +177,3 @@ void init_gio(void)
 }
 
 
-/* open file and return pointer to stuff read  /
-void* tpircs_open_file(const char* name, uint size)
-{
-   usleep(3000000);
-   char code[1000] = "(exit)";
-   //sprintf(code, "((gio-open %s %i) 'address)", name, size);
-   void* addr /*= (void*)scm_to_uint64(scm_c_eval_string(code))/;
-   scm_c_eval_string("(exit)");
-   free(code);
-   return addr;
-}*/
-
-
