@@ -169,45 +169,6 @@
   (sdna-db 'add 'structs-s structs-s)
   'ok)
 
-;(define (flatten-struct sdna)
-;  (cons (struct-type sdna)
-;	(map (lambda (field)
-;	       (p field "\n:")
-;	       (let* ((fname (field-name field))
-;		      (ftype (field-type field))
-;		      (fsdna (get-sdna-by-type-index fname)))
-;		 (list fname
-;		     (if (null? fsdna)
-;			 ftype
-;			 (flatten-struct fsdna)))))
-;	     (struct-fields sdna))))
-;
-  ;(define dna (get-sdna-by-type-index type))
-
-  ;(if (null? dna)
-  ;    type
-  ;    (cons (struct-type dna)
-	;    (map (lambda (field)
-	;	   (list (field-name field)
-	;		 (flatten-struct (field-type field))))
-	;	 (struct-fields dna)))))
-
-;(define (flatten-sdna sdna)
-;  (define flat-structs '())
-;
-;  (define types (sdna-db 'types))
-;
-;  (define name (struct-type sdna))
-
-;  (map (lambda (field)
-;	 (let ((type (list-ref types (field-type field))))
-;	   (if (not type)
-;	       field
-;	       (list field (flatten-sdna-type type)))))
-;       (struct-fields sdna)))
-
-;(define (read-sdna-type type)
-;  (
 
 (define (get-sdna-by-type-index type)
   (search (sdna-db 'structs-i)
@@ -282,45 +243,6 @@
   )
 
 (start)
-
-;sdna types array
-;(define (index-in-types elem) (index (sdna-db 'types) (lambda (x) (string=? x s))))
-
-;get offset of structure dna in structs-s
-;(define (index-in-sdna-s type-string)
-;  (index (sdna-db 'structs-s)
-;	 (lambda (x) (string=? (struct-type x) type-string))))
-
-;get offset of structure dna in structs-i
-;(define (index-in-sdna-i type-index)
-;  (index (sdna-db 'structs-i)
-;	 (lambda (x) (= (struct-type x) type-index))))
-
-;(define (index->sdna index sdna-arr)
-;  (list-ref sdna-arr index))
-
-;(define (type->sdna type)
-;  (
-
-;(define (sdna-i->sdna type-i) (list-ref (sdna-db 'structs-s) type-i))
-;(define (i->sdna-i type-i)
-;  (get-pos (sdna-db 'structs-i)
-;	   type-i
-;	   (lambda (strc i) (= i (struct-type strc)))))
-
-
-;(define (get-sdna-by-type type))
-;(define (get-sdna-by-type-index index))
-;(define (get-sdna-by-))
-
-;(define (get-sdna-s type-s)
-;  (list-ref (sdna-db 'structs-s) (type-s->i type-s)
-;  (fold (lambda (struct prev)
-;	  (if (string=? name (struct-type struct))
-;	      struct
-;	      prev))
-;	#f
-;	(sdna-db 'structs-s))
 
 
 (define (print-structs)
