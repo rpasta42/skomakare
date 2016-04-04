@@ -1,0 +1,7 @@
+[package]
+name = "skomakare"
+version = "0.1.0"
+authors = ["Kostyantyn Kovalskyy <kostelkow@gmail.com>"]
+
+[dependencies]
+glium = "*"

@@ -1,9 +1,4 @@
-bin/
-obj/
-Media/
 *~
-*.obj
-*cfg
-skomakare.cbp
-skomakare.layout
-skomakare.depend
+*.swp
+Cargo.lock
+target
