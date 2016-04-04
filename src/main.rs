@@ -31,7 +31,7 @@ struct Vertex {
 impl Vertex {
    fn new(x : Coord, y : Coord, z : Coord) -> Vertex { Vertex { position : (x, y, z) } }
    fn print(&self) {
-      println!("(x:{}, y:{}, z:{})", self.position[0], self.position[1], self.position[2]);
+      println!("(x:{}, y:{}, z:{})", self.position.0, self.position.1, self.position.2);
    }
 }
 
@@ -39,12 +39,16 @@ struct Model {
    vertices : Vec<Vertex>
 }
 impl Model {
-   fn new() -> Model { Model { vertices : Vec::new() } }
+   fn new() -> Model {
+      let mut m = Model { vertices : Vec::new() };
+      m.add_coords(0.0, 0.0, 0.0);
+      m
+   }
    fn add(&mut self, v : Vertex) {
       self.vertices.push(v);
    }
    fn add_coords(&mut self, x : Coord, y : Coord, z : Coord) {
-      self.vertices.push(Vertex::new(x, y, z));
+      self.vertices.push(Vertex::new(x * 5.0, y * 5.0, z * 5.0));
    }
    fn print(&self) {
       for vert in &self.vertices {
@@ -90,17 +94,30 @@ fn display_file(path : &str) {
 }
 
 fn draw(m : &Model) {
-   use glium::{DisplayBuild, Surface};
-   let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
    implement_vertex!(Vertex, position);
 
-   let vertex_buffer = glium::VertexBuffer::new(&display, &m.vertices).unwrap();
-   let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
+   use glium::{DisplayBuild, Surface};
+   let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
+
+   //let vertex_buffer = glium::VertexBuffer::new(&display, &m.vertices).unwrap();
+   let positions = glium::VertexBuffer::new(&display, &m.vertices).unwrap();
+   //let normals = None; //glium::n;
+
+   //let i_type = glium::index::PromitiveType::TrianglesList; //doesnt work
+   //let i_type = glium::index::PrimitiveType::LinesListAdjacency; //bad 
+   //let i_type = glium::index::PrimitiveType::LinesList; //bad 
+   //let i_type = glium::index::PrimitiveType::LineStrip; //bad
+   //let i_type = glium::index::PrimitiveType::LineStripAdjacency; //bad'
+   let i_type = glium::index::PrimitiveType::Points; //ok-ish
+   let indices = glium::index::NoIndices(i_type);
+
 
    let vertex_shader_src = r#"
       #version 140
-      in vec2 position;
-      void main() { gl_Position = vec4(position, 0.0, 1.0); }
+      in vec3 position;
+      uniform mat4 matrix;
+      //void main() { gl_Position = matrix * vec4(position, 1.0); }
+      void main() { gl_Position = matrix * vec4(position, 1.0); }
    "#;
 
    let fragment_shader_src = r#"
@@ -114,8 +131,18 @@ fn draw(m : &Model) {
    loop {
       let mut target = display.draw();
       target.clear_color(0.0, 0.0, 1.0, 1.0);
-      target.draw(&vertex_buffer, &indices, &program, &glium::uniforms::EmptyUniforms, &Default::default()).unwrap();
+
+      let matrix = [
+         [0.01, 0.0,  0.0,  0.0],
+         [0.0,  0.01, 0.0,  0.0],
+         [0.0,  0.0,  0.01, 0.0],
+         [0.0,  0.0,  0.0,  1.0f32]
+      ];
+
+      //target.draw(&positions, &indices, &program, &glium::uniforms::EmptyUniforms, &Default::default()).unwrap();
+      target.draw(&positions, &indices, &program, &uniform! { matrix: matrix }, &Default::default()).unwrap();
       target.finish().unwrap();
+
       for ev in display.poll_events() {
          match ev {
             glium::glutin::Event::Closed => return,
@@ -126,5 +153,7 @@ fn draw(m : &Model) {
 }
 
 fn main() {
-    display_file("data/square/square.obj");
+   display_file("data/square/square.obj");
+   //display_file("data/sub/subdiv_square.obj");
+
 }
