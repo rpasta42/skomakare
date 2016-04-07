@@ -1,6 +1,17 @@
 #[macro_use]
 extern crate glium;
 
+/*
+build camera with matrix
+
+face = triangle
+Open object file. Look for f (face)
+vertex index/uv index/normal index *3
+vn = vertex normal x y z
+s = specular
+vt = uv = texture coordinates. mapping 
+*/
+
 fn read_file(path_str : &str) -> Option<String> {
    use std::io::prelude::*;
    use std::fs::File;
@@ -48,7 +59,9 @@ impl Model {
       self.vertices.push(v);
    }
    fn add_coords(&mut self, x : Coord, y : Coord, z : Coord) {
-      self.vertices.push(Vertex::new(x * 5.0, y * 5.0, z * 5.0));
+      //self.vertices.push(Vertex::new(x * 5.0, y * 5.0, z * 5.0));
+      self.vertices.push(Vertex::new(x, y , z ));
+
    }
    fn print(&self) {
       for vert in &self.vertices {
@@ -103,12 +116,12 @@ fn draw(m : &Model) {
    let positions = glium::VertexBuffer::new(&display, &m.vertices).unwrap();
    //let normals = None; //glium::n;
 
-   //let i_type = glium::index::PromitiveType::TrianglesList; //doesnt work
+   let i_type = glium::index::PrimitiveType::TrianglesList; //doesnt work
    //let i_type = glium::index::PrimitiveType::LinesListAdjacency; //bad 
    //let i_type = glium::index::PrimitiveType::LinesList; //bad 
    //let i_type = glium::index::PrimitiveType::LineStrip; //bad
    //let i_type = glium::index::PrimitiveType::LineStripAdjacency; //bad'
-   let i_type = glium::index::PrimitiveType::Points; //ok-ish
+   //let i_type = glium::index::PrimitiveType::Points; //ok-ish
    let indices = glium::index::NoIndices(i_type);
 
 
@@ -117,28 +130,47 @@ fn draw(m : &Model) {
       in vec3 position;
       uniform mat4 matrix;
       //void main() { gl_Position = matrix * vec4(position, 1.0); }
-      void main() { gl_Position = matrix * vec4(position, 1.0); }
+      void main() { gl_Position = matrix * vec4(position/500.0, 1.0); }
    "#;
 
    let fragment_shader_src = r#"
       #version 140
       out vec4 color;
-      void main() { color = vec4(1.0, 0.0, 0.0, 1.0); }
+      //void main() { color = vec4(1.0, 0.0, 0.0, 1.0); }
+      void main() { color = vec4(0.0, 1.0, 0.0, 1.0); }
+
    "#;
 
    let program = glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap();
 
+   let mut i = 0.0f32;
+
    loop {
+      i += 2.0*/*f32::consts::PI*/3.1415/1000.0;
+
       let mut target = display.draw();
       target.clear_color(0.0, 0.0, 1.0, 1.0);
 
-      let matrix = [
+      /*let matrix = [
          [0.01, 0.0,  0.0,  0.0],
          [0.0,  0.01, 0.0,  0.0],
          [0.0,  0.0,  0.01, 0.0],
          [0.0,  0.0,  0.0,  1.0f32]
-      ];
+      ];*/
 
+      /*let matrix = [
+         [1.0, 0.0,  0.0,  0.0],
+         [0.0,  1.0, 0.0,  0.0],
+         [0.0,  0.0,  1.0, 0.0],
+         [0.0,  0.0,  0.0,  1.0f32]
+      ];*/
+
+      let matrix = [
+         [i.cos(), 0.0,  i.sin(),  0.0],
+         [0.0,  1.0, 0.0,  0.0],
+         [-i.sin(),  0.0,  i.cos(), 0.0],
+         [0.0,  0.0,  0.0,  1.0f32]
+      ];
       //target.draw(&positions, &indices, &program, &glium::uniforms::EmptyUniforms, &Default::default()).unwrap();
       target.draw(&positions, &indices, &program, &uniform! { matrix: matrix }, &Default::default()).unwrap();
       target.finish().unwrap();
@@ -153,7 +185,8 @@ fn draw(m : &Model) {
 }
 
 fn main() {
-   display_file("data/square/square.obj");
+   //display_file("data/square/square.obj");
    //display_file("data/sub/subdiv_square.obj");
+   display_file("data/female02.obj");
 
 }
