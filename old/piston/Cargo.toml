@@ -1,0 +1,9 @@
+[package]
+name = "skomakara"
+version = "0.0.1"
+authors = ["Kostyantyn Kovalskyy <kostelkow@gmail.com>"]
+
+[dependencies]
+piston_window = "0.42.0"
+LambdaOxide = { git = "https://github.com/KostyaKow/LambdaOxide.git", version = "0.0.1" }
+#piston = "0.19.0"
