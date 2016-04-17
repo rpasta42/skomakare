@@ -17,9 +17,7 @@ struct Point {
 struct ColorVertex {
    pos : Point, tex_pos : Point
 }
-
 impl ColorVertex {
-
    fn new_coord(x1 : Coord, y1 : Coord, x2 : Coord, y2: Coord) -> ColorVertex {
       ColorVertex {
          pos      : [x1, y1],
@@ -43,20 +41,31 @@ impl ColorVertex {
 
 implement_vertex!(ColorVertex, pos, tex_pos);
 
+#[derive(Debug)]
 enum BuiltInShape {
    Square, Triangle, Circle
 }
-enum Shape {
-   Vertices(Vec<ColorVertex>), BuiltIn(BuiltInShape)
-}
-
+#[derive(Clone)]
 struct Shape {
-   vertices : Option<Vec<ColorVertex>>,
+   vertices : Vec<ColorVertex>
 }
 impl Shape {
-   fn new() -> Shape {
-      let mut m = Shape { vertices : Vec::new() };
-      m
+   fn new() -> Shape { Shape { vertices : Vec::new() } }
+   fn new_builtin(shape_type : BuiltInShape) -> Shape {
+
+      let mut shape = Shape { vertices : Vec::new() }; //TODO
+      match shape_type {
+         BuiltInShape::Triangle => {
+            shape.add_coords(-0.5, -0.5, 0.0, 0.0);
+            shape.add_coords(0.0, 0.5, 0.0, 1.0);
+            shape.add_coords(0.5, -0.25, 1.0, 0.0);
+         }
+         _ => { panic!("not implemented {:?}", shape_type); }
+      }
+      shape
+   }
+   fn new_vertices(vertices_ : Vec<ColorVertex>) -> Shape {
+      Shape { vertices : vertices_ }
    }
    fn add(&mut self, v : ColorVertex) {
       self.vertices.push(v);
@@ -65,23 +74,80 @@ impl Shape {
       self.vertices.push(ColorVertex::new(x1, y1, x2, y2));
    }
    fn print(&self) {
-      for vert in &self.vertices { vert.print(); }
+      for vert in &*self.vertices { vert.print(); }
    }
 }
 
-
-struct GameObject {
+#[derive(Clone)]
+struct Model {
    shape : Option<Shape>,
    position: Option<Point>,
    rotation : Option<Coord>,
    color : Option<Color>,
-   img_path : Option<String>,
-   texture : u8,
+   img_path : Option<&'static str>,
+   texture : Option<u8>,
+   size : Option<Point> //% of screen width and height
+}
+impl Model {
+   fn new() -> Model {
+      Model {
+         shape : None, position : None, rotation : None,
+         color : None, img_path : None, texture : None, size : None
+      }
+   }
+   fn shape(&mut self, shape_ : Shape) -> &mut Model { self.shape = Some(shape_); self }
+   fn position(&mut self, position_ : Point) -> &mut Model { self.position = Some(position_); self }
+   fn rotation(&mut self, rotation_ : Coord) -> &mut Model { self.rotation = Some(rotation_); self }
+   fn color(&mut self, color_ : Color) -> &mut Model { self.color = Some(color_); self }
+   fn img_path(&mut self, img_path_ : &'static str) -> &mut Model { self.img_path = Some(img_path_); self }
+   fn texture(&mut self, texture_ : u8) -> &mut Model { self.texture = Some(texture_); self }
+   fn size(&mut self, size_ : Point) -> &mut Model { self.size = Some(size_); self }
+   fn finalize(&self) -> Model {
+      //calculate missing stuff and make sure we didn't get too many arguments
+      Model {
+         shape: self.shape.clone(), position: self.position, rotation: self.rotation,
+         color: self.color, img_path: self.img_path, texture: self.texture, size: self.size
+      }
+   }
+
+   fn draw() {}
+}
+
+struct Camera {}
+impl Camera {
+}
+
+/*trait GameObject {
+   fn set_position(x : Point);
+   fn move(x : Point);
+   fn set_rotation(x : Coord);
+   fn rotate(degrees : Coord);
+   fn set_size(scale : Coord);
+   fn resize(scale_factor : Coord);
+}*/
+
+struct ObjectData {
+   location : Point,
+   rotation : Coord,
+   size : Coord
+}
+enum ObjectType {
+   Model(Model), Scene(Scene), Camera(Camera) //Physics(u32)
+}
+struct GameObject {
+   object_type : ObjectType,
+   object_data : ObjectData
 }
 impl GameObject {
-   fn new() -> GameObject { shape : None, position : None, rotation : None, color : None, img_path : None, texture : None }
-
-   fn shape(&mut self, s : Shape) -> &mut GameObject { 
+   fn set_position(x : Point) {}
+   fn move_(x : Point) {}
+   fn set_rotation(x : Coord) {}
+   fn rotate(degrees : Coord) {}
+   fn set_size(scale : Coord) {}
+   fn resize(scale_factor : Coord) {}
+}
+struct Scene {
+   items : Vec<GameObject>
 }
 
 const vertex_shader_src : &'static str = r#"
@@ -167,11 +233,21 @@ fn draw(m : &Shape, img_path : &str) {
    }
 }
 
-fn main() {
+fn main_old() {
+   use glium::{DisplayBuild, Surface};
+   let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
+
    let mut m = Shape::new();
    m.add_coords(-0.5, -0.5, 0.0, 0.0);
    m.add_coords(0.0, 0.5, 0.0, 1.0);
    m.add_coords(0.5, -0.25, 1.0, 0.0);
    draw(&m, "data/opengl.png");
+}
+
+fn main() {
+   use glium::{DisplayBuild, Surface};
+   let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
+
+   let m = Model::new().shape(Shape::new_builtin(BuiltInShape::Triangle)).finalize();
 }
 
