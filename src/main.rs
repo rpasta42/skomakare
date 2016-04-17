@@ -9,31 +9,36 @@ use model::*;
 use data::*;
 use types::*;
 
+use glium::texture::*;
+
 mod types;
 mod data;
 mod model;
 
-use glium::DisplayBuild::Facade;
-
 implement_vertex!(ColorVertex, pos, tex_pos);
 
-fn img_path_to_image(img_path : &str, display : &Facade) {
+fn img_path_to_image<'a>(img_path : &str) -> RawImage2d<'a, u8> {
    let c = Cursor::new(&include_bytes!("../data/opengl.png")[..]);
+
+   //load() -> ImageResult<DynamicImage>
+   //to_rgba() -> RgbImage
    let image = image::load(c, image::PNG).unwrap().to_rgba();
 
    let image_dimensions = image.dimensions();
 
-   use glium::texture::*;
+   //image type RgbImage = ImageBuffer<Rgb<u8>, Vec<u8>>;
+   //image.into_raw() -> Vec<u8>
+   //from_raw_rgba_reversed -> RawImage2d<'a, u8>
    let image = RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_dimensions);
-   let texture = Texture2d::new(display, image).unwrap(); //kk
-   texture
+   image
 }
 
 fn draw(m : &Shape, img_path : &str) {
    use glium::{DisplayBuild, Surface};
    let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
 
-   let texture = img_path_to_texture(img_path, &display);
+   let image = img_path_to_image(img_path);
+   let texture = Texture2d::new(&display, image).unwrap(); 
 
    let vertex_buffer = glium::VertexBuffer::new(&display, &m.vertices).unwrap();
    let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
