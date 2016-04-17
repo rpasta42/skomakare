@@ -5,3 +5,5 @@ authors = ["Kostyantyn Kovalskyy <kostelkow@gmail.com>"]
 
 [dependencies]
 glium = "*"
+LambdaOxide = { git = "https://github.com/KostyaKow/LambdaOxide.git", version = "0.0.1" }
+
