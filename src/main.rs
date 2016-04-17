@@ -1,6 +1,9 @@
 #![feature(type_ascription)]
 #[macro_use]
 extern crate glium;
+extern crate image;
+
+use std::io::Cursor;
 
 type Coord = f32;
 
@@ -22,6 +25,8 @@ impl Vertex {
    }
 }
 
+implement_vertex!(Vertex, pos, tex);
+
 struct Model {
    vertices : Vec<Vertex>
 }
@@ -41,47 +46,75 @@ impl Model {
    }
 }
 
-fn draw(m : &Model) {
-   implement_vertex!(Vertex, pos, tex);
+fn draw(m : &Model, img_path : &str) {
    use glium::{DisplayBuild, Surface};
    let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
 
-   let vertex_buffer = glium::VertexBuffer::new(&display, &m.vertices).unwrap();
+   let image = image::load(Cursor::new(&include_bytes!("../data/opengl.png")[..]), image::PNG)
+               .unwrap().to_rgba();
 
+   let image_dimensions = image.dimensions();
+   let image = glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_dimensions);
+   let texture = glium::texture::Texture2d::new(&display, image).unwrap();
+
+   let vertex_buffer = glium::VertexBuffer::new(&display, &m.vertices).unwrap();
    let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
    let vertex_shader_src = r#"
       #version 140
       in vec2 pos;
+      in vec2 tex;
+      out vec2 v_tex_coords;
+
       uniform mat4 matrix;
-      void main() { gl_Position = matrix * vec4(pos, 0.0, 1.0); }
+
+      void main() {
+         v_tex_coords = tex; 
+         gl_Position = matrix * vec4(pos, 0.0, 1.0); }
    "#;
 
    let fragment_shader_src = r#"
       #version 140
+      in vec2 v_tex_coords;
       out vec4 color;
-      void main() { color = vec4(1.0, 0.0, 0.0, 1.0); }
+
+      uniform sampler2D tex;
+
+      void main() {
+         color = texture(tex, v_tex_coords);
+      }
    "#;
 
    let program = glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap();
 
-   let mut i = 0.0f32;
+   //let mut i = 0.0f32;
+   let mut t = -0.5;
 
    loop {
-      i += 2.0*/*f32::consts::PI*/3.1415/1000.0;
+      //i += 2.0*/*f32::consts::PI*/3.1415/1000.0;
+      t += 0.0002;
+      if t > 0.5 { t = -0.5; }
 
       let mut target = display.draw();
       target.clear_color(0.0, 0.0, 1.0, 1.0);
 
-      let matrix = [
-         [i.cos(), 0.0,  i.sin(),  0.0],
-         [0.0,  1.0, 0.0,  0.0],
-         [-i.sin(),  0.0,  i.cos(), 0.0],
-         [0.0,  0.0,  0.0,  1.0f32]
-      ];
+      let uniforms = uniform! {
+         matrix: [
+            /*[i.cos(), 0.0,  i.sin(),  0.0],
+            [0.0,  1.0, 0.0,  0.0],
+            [-i.sin(),  0.0,  i.cos(), 0.0],
+            [0.0,  0.0,  0.0,  1.0f32]*/
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [ t , 0.0, 0.0, 1.0f32],
+         ],
+         tex: &texture
+      };
 
       //target.draw(&vertex_buffer, &indices, &program, &glium::uniforms::EmptyUniforms, &Default::default()).unwrap();
-      target.draw(&vertex_buffer, &indices, &program, &uniform! { matrix: matrix }, &Default::default()).unwrap();
+      //target.draw(&vertex_buffer, &indices, &program, &uniform! { matrix: matrix }, &Default::default()).unwrap();
+      target.draw(&vertex_buffer, &indices, &program, &uniforms, &Default::default()).unwrap();
 
       target.finish().unwrap();
 
@@ -97,8 +130,8 @@ fn draw(m : &Model) {
 fn main() {
    let mut m = Model::new();
    m.add_coords(-0.5, -0.5, 0.0, 0.0);
-   m.add_coords(0.0, 0.5, 0.0, 0.0);
-   m.add_coords(0.5, -0.25, 0.0, 0.0);
-   draw(&m);
+   m.add_coords(0.0, 0.5, 0.0, 1.0);
+   m.add_coords(0.5, -0.25, 1.0, 0.0);
+   draw(&m, "data/opengl.png");
 }
 
