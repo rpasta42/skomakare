@@ -35,3 +35,7 @@ pub fn read_file(path_str : &str) -> Option<String> {
       Err(why) => { panic!("{}", Error::description(&why)); None }
    }
 }
+
+pub fn read_bin_file(path_str : &str) {}
+
+
