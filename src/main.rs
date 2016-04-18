@@ -3,48 +3,55 @@
 extern crate glium;
 extern crate image;
 
-use std::io::Cursor;
-
 use model::*;
-use data::*;
+use shaders::*;
 use types::*;
+use scene::*;
+use utils::*;
 
-use glium::texture::*;
+use glium::backend::glutin_backend::GlutinFacade;
 
 mod types;
-mod data;
+mod shaders;
 mod model;
+mod scene;
+mod camera;
+mod utils;
 
 implement_vertex!(ColorVertex, pos, tex_pos);
 
-fn img_path_to_image<'a>(img_path : &str) -> RawImage2d<'a, u8> {
-   let c = Cursor::new(&include_bytes!("../data/opengl.png")[..]);
-
-   //load() -> ImageResult<DynamicImage>
-   //to_rgba() -> RgbImage
-   let image = image::load(c, image::PNG).unwrap().to_rgba();
-
-   let image_dimensions = image.dimensions();
-
-   //image type RgbImage = ImageBuffer<Rgb<u8>, Vec<u8>>;
-   //image.into_raw() -> Vec<u8>
-   //from_raw_rgba_reversed -> RawImage2d<'a, u8>
-   let image = RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_dimensions);
-   image
+struct Game {
+   display : Display,
+   scene : Scene,
+   shader_manager : ShaderManager
+}
+impl Game {
+   fn new() -> Game {
+      use glium::{DisplayBuild, Surface};
+      let display_ = glium::glutin::WindowBuilder::new().build_glium().unwrap();
+      let mut game = Game {
+         display : display_,
+         scene : Scene { items: Vec::new() },
+         shader_manager : ShaderManager::new()
+      };
+      game.shader_manager.add_defaults(&game.display);
+      game
+   }
 }
 
 fn draw(m : &Shape, img_path : &str) {
    use glium::{DisplayBuild, Surface};
    let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
 
-   let image = img_path_to_image(img_path);
-   let texture = Texture2d::new(&display, image).unwrap(); 
+   //let image = img_path_to_image(img_path);
+   //let texture = Texture2d::new(&display, image).unwrap(); 
+   let texture = img_path_to_texture(img_path, &display);
 
    let vertex_buffer = glium::VertexBuffer::new(&display, &m.vertices).unwrap();
    let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
-
-   let program = glium::Program::from_source(&display, VERTEX_SHADER_SRC, FRAGMENT_SHADER_SRC, None).unwrap();
+   use glium::Program;
+   let program = Program::from_source(&display, VERT_SH_TEXTURE, FRAG_SH_TEXTURE, None).unwrap();
 
    let mut i = 0.0f32;
    let mut t = -0.5;
@@ -86,7 +93,7 @@ fn draw(m : &Shape, img_path : &str) {
    }
 }
 
-fn main_old() {
+fn main_very_old() {
    use glium::{DisplayBuild, Surface};
    let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
 
@@ -101,7 +108,26 @@ fn main() {
    use glium::{DisplayBuild, Surface};
    let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
 
-   let m = Model::new().shape(Shape::new_builtin(BuiltInShape::Triangle)).finalize();
-   draw(&m.shape.unwrap(), "data/opengl.png");
+   let mut game = Game::new();
+
+   let shape = Shape::new_builtin(BuiltInShape::Triangle);
+   let color = (1.0, 0.0, 1.0, 0.0);
+   let m = Model::new()
+            .shape(shape)
+            .color(color)
+            .finalize(&mut game.shader_manager, &game.display);
+
+   //draw(&m.shape.unwrap(), "data/opengl.png");
+
+   let triangle = GameObject::new(ObjectType::Model(m));
+   game.scene.items.push(triangle);
+
+   match game.scene.items[0].object_type {
+      ObjectType::Model(ref m) => {
+         let shape = m.shape.clone();
+         draw(&shape.unwrap(), "data/opengl.png");
+      }
+      _ => panic!("unsupported object")
+   };
 }
 

@@ -1,4 +1,6 @@
+use glium::backend::glutin_backend::GlutinFacade;
 
+pub type Display = GlutinFacade;
 pub type Coord = f32;
 pub type Point = [Coord; 2];
 pub type Color = (Coord, Coord, Coord, Coord);
