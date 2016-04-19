@@ -1,0 +1,53 @@
+http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
+
+transforms
+   first move, then rotate, then scale
+   transform_vec = transM * rotM * ScaleM * OriginVec
+types
+   model
+      moves the model
+   view (moves world around)
+      moves the camera
+   projection
+
+
+
+[ 1  2  3]   [1 2]   [1*1+2*4+3*1 1*2+2*5+3*0   ]   [12 12]
+[ 2  4  0] x [4 5] = [2*1+4*4+0*1 2*2+4*5+0*0   ] = [18 24]
+[ 5 -1  2]   [1 0]   [5*1-1*4+2*1 5*2+(-1)*5+2*0]   [3  5 ]
+
+moving
+[1 0 0 x]   [x]
+[0 1 0 y] x [y]
+[0 0 0 z]   [z]
+[0 0 0 1]   [1]
+
+identity
+[1 0 0 0]
+[0 1 0 0]
+[0 0 1 0]
+[0 0 0 1]
+
+scaling
+[x 0 0 0]
+[0 y 0 0]
+[0 0 z 0]
+[0 0 0 1]
+
+rotation
+   T = theta
+
+rotation around x axis 
+[1 0    0     0]    [x]
+[0 cosT -sinT 0] x  [y]
+[0 sinT -cosT 0]    [z]
+[0 0    0     1]    [1]
+
+rotation around y
+[cosT  0 -sinT 0]
+[0     1 0     0]
+[-sinT 0 cosT  0]
+[0     0 0     1]
+
+
+
