@@ -8,6 +8,7 @@ use shaders::*;
 use types::*;
 use scene::*;
 use utils::*;
+use camera::Camera;
 
 use glium::backend::glutin_backend::GlutinFacade;
 
@@ -22,8 +23,9 @@ implement_vertex!(ColorVertex, pos, tex_pos);
 
 struct Game {
    display : Display,
-   scene : Scene,
-   shader_manager : ShaderManager
+   root : Scene,
+   shader_manager : ShaderManager,
+   camera : Camera
 }
 impl Game {
    fn new() -> Game {
@@ -31,7 +33,8 @@ impl Game {
       let display_ = glium::glutin::WindowBuilder::new().build_glium().unwrap();
       let mut game = Game {
          display : display_,
-         scene : Scene { items: Vec::new() },
+         camera : Camera::new(),
+         root : Scene::new(),
          shader_manager : ShaderManager::new()
       };
       game.shader_manager.add_defaults(&game.display);

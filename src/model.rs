@@ -15,7 +15,7 @@ pub struct Shape {
 impl Shape {
    pub fn new() -> Shape { Shape { vertices : Vec::new() } }
    pub fn new_builtin(shape_type : BuiltInShape) -> Shape {
-      let mut shape = Shape { vertices : Vec::new() }; //TODO
+      let mut shape = Shape::new(); //TODO
       match shape_type {
          BuiltInShape::Triangle => {
             shape.add_coords(-0.5, -0.5, 0.0, 0.0);

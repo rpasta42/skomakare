@@ -31,4 +31,8 @@ impl GameObject {
 pub struct Scene {
    pub items : Vec<GameObject>
 }
-
+impl Scene {
+   pub fn new() -> Scene {
+      items : Vec::new()
+   }
+}
