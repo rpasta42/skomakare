@@ -4,6 +4,7 @@ use utils::img_path_to_texture;
 use glium::texture::Texture2d;
 use glium::backend::glutin_backend::GlutinFacade;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub enum BuiltInShape {
@@ -54,14 +55,14 @@ pub struct Model {
    pub texture_type : TextureType,
    pub color : Option<Color>,
    pub img_path : Option<&'static str>,
-   pub texture : Option<Texture2d>,
+   pub texture : Rc<RefCell<Option<Texture2d>>>, //Option<Box<Texture2d>>,
    pub shader_name : Option<String>
 }
 impl Model {
    pub fn new() -> Model {
       Model {
          shape : None, color : None, img_path : None,
-         texture : None, shader_name : None,
+         texture : Rc::new(RefCell::new(None)), shader_name : None,
          texture_type : TextureType::None
       }
    }
@@ -99,8 +100,9 @@ impl Model {
          }
          texture_type = TextureType::Image;
          self.shader_name = Some("texture".to_string());
-         Some(img_path_to_texture(img_path, display))
-      } else { None };
+         //Some(Box::new(img_path_to_texture(img_path, display)))
+         Rc::new(RefCell::new(Some(img_path_to_texture(img_path, display))))
+      } else { Rc::new(RefCell::new(None)) };
 
       if texture_type == TextureType::None {
          panic!("Model needs to either have color or img_path");

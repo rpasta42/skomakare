@@ -49,7 +49,7 @@ impl Game {
       let mut target = self.display.draw();
       target.clear_color(0.0, 0.0, 1.0, 1.0);
 
-      for game_obj in self.root.items {
+      for game_obj in &self.root.items {
          let obj_m = game_obj.cam.get_m();
          let final_m = mul_matrices(&init_m, &obj_m);
 
@@ -65,13 +65,17 @@ impl Game {
             use glium::index::{NoIndices, PrimitiveType};
             let indices = NoIndices(PrimitiveType::TrianglesList);
             let ref shaders = self.shader_manager.shaders;
-            let program = shaders.get(&*m.shader_name.unwrap()).unwrap();
+            let shader_name = m.shader_name.clone().unwrap();
+            let program = shaders.get(&*shader_name).unwrap();
+
 
             match m.texture_type {
                TextureType::Image => {
+                  //let t = m.texture.borrow().unwrap();
+                  let t = m.texture.clone();//.borrow().unwrap();
                   let u = uniform! {
                      matrix : final_m,
-                     tex : &m.texture.unwrap()
+                     tex : t //&t
                   };
                   target.draw(&vert_buff, &indices, program, &u,
                               &Default::default()).unwrap();

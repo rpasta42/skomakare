@@ -35,7 +35,7 @@ impl ShaderManager {
 }
 
 
-pub static VERTEX_SHADER_SRC : &'static str = r#"
+/*pub static VERTEX_SHADER_SRC : &'static str = r#"
    #version 140
    in vec2 pos;
    in vec2 tex_pos;
@@ -58,7 +58,7 @@ pub static FRAGMENT_SHADER_SRC : &'static str = r#"
    void main() {
       color = texture(tex, v_tex_coords);
    }
-"#;
+"#;*/
 
 pub static VERT_SH_COLOR : &'static str = r#"
    #version 140
@@ -107,7 +107,6 @@ pub static FRAG_SH_COLOR_B : &'static str = r#"
       color = vec4(0.0, 0.0, 1.0, 1.0);
    }
 "#;
-
 
 pub static VERT_SH_TEXTURE : &'static str = r#"
    #version 140
