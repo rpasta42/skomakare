@@ -9,9 +9,9 @@ pub type Color = (Coord, Coord, Coord, Coord);
 
 pub fn mul_vector(v : &Vector, m : &Matrix) -> Vector {
    let mut ret : Vec<f32> = Vec::new();
-   for i in 0..3 {
+   for i in 0..4 {
       let mut sum = 0.0;
-      for j in 0..3 {
+      for j in 0..4 {
          sum += v[j] * m[i][j];
       }
       ret.push(sum);
@@ -20,7 +20,7 @@ pub fn mul_vector(v : &Vector, m : &Matrix) -> Vector {
 }
 pub fn mul_matrices(m1 : &Matrix, m2 : &Matrix) -> Matrix {
    let mut ret = Vec::new();
-   for i in 0..3 {
+   for i in 0..4 {
      ret.push(mul_vector(&m2[i], m1));
    }
    [ret[0], ret[1], ret[2], ret[3]]

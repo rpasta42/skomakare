@@ -45,8 +45,8 @@ impl Camera {
       let v = self.pos;
       [[1.0, 0.0, 0.0, v[0]],
        [0.0, 1.0, 0.0, v[1]],
-       [0.0, 0.0, 1.0, v[2]],
-       [0.0, 0.0, 0.0, v[3]]]
+       [0.0, 0.0, 1.0, 1.0 ],
+       [0.0, 0.0, 0.0, 1.0 ]]
       //mul_vector(self.get_v(), pos_m)
    }
    pub fn get_rot_m(&self) -> Matrix {

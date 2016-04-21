@@ -68,14 +68,14 @@ impl Game {
             let shader_name = m.shader_name.clone().unwrap();
             let program = shaders.get(&*shader_name).unwrap();
 
-
             match m.texture_type {
                TextureType::Image => {
-                  //let t = m.texture.borrow().unwrap();
-                  let t = m.texture.clone();//.borrow().unwrap();
+                  let t = match *m.get_texture() {
+                     Some(ref x) => x, None => panic!("z")
+                  };
                   let u = uniform! {
                      matrix : final_m,
-                     tex : t //&t
+                     tex : t
                   };
                   target.draw(&vert_buff, &indices, program, &u,
                               &Default::default()).unwrap();
@@ -90,7 +90,6 @@ impl Game {
             };
 
          } else { panic!("unsupported object"); }
-
          /*match game_obj.data {
             Model(ref m) => {
                let shape = m.shape.clone();
@@ -190,8 +189,9 @@ fn main() {
    let triangle = GameObject::new(GameObjectType::Model(m));
    game.root.items.push(triangle);
 
-   game.draw();
-
+   loop {
+      game.draw();
+   }
    
    //draw(&m.shape.unwrap(), "data/opengl.png");
 }

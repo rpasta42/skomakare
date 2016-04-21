@@ -55,14 +55,14 @@ pub struct Model {
    pub texture_type : TextureType,
    pub color : Option<Color>,
    pub img_path : Option<&'static str>,
-   pub texture : Rc<RefCell<Option<Texture2d>>>, //Option<Box<Texture2d>>,
+   pub texture : Option<Texture2d>,
    pub shader_name : Option<String>
 }
 impl Model {
    pub fn new() -> Model {
       Model {
          shape : None, color : None, img_path : None,
-         texture : Rc::new(RefCell::new(None)), shader_name : None,
+         texture : None, shader_name : None,
          texture_type : TextureType::None
       }
    }
@@ -77,6 +77,9 @@ impl Model {
    }
    //pub fn shader_name(&mut self, shader_name_ : String) -> &mut Model { self.shader_name = Some(shader_name_); self }
 
+   pub fn get_texture(&self) -> &Option<Texture2d> {
+      &self.texture
+   }
    pub fn finalize(&mut self, sm : &mut ShaderManager, display : &GlutinFacade)
       -> Model
    {
@@ -100,9 +103,8 @@ impl Model {
          }
          texture_type = TextureType::Image;
          self.shader_name = Some("texture".to_string());
-         //Some(Box::new(img_path_to_texture(img_path, display)))
-         Rc::new(RefCell::new(Some(img_path_to_texture(img_path, display))))
-      } else { Rc::new(RefCell::new(None)) };
+         Some(img_path_to_texture(img_path, display))
+      } else { None };
 
       if texture_type == TextureType::None {
          panic!("Model needs to either have color or img_path");
