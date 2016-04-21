@@ -1,3 +1,7 @@
+TODO:
+   instead of passing display on every call, find a way to store a pointer without lifetimes in shader_manager and model
+   don't copy stuff
+
 http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 
 transforms

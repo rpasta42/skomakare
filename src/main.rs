@@ -25,20 +25,84 @@ struct Game {
    display : Display,
    root : Scene,
    shader_manager : ShaderManager,
-   camera : Camera
+   cam : Camera
 }
 impl Game {
    fn new() -> Game {
       use glium::{DisplayBuild, Surface};
-      let display_ = glium::glutin::WindowBuilder::new().build_glium().unwrap();
+      use glium::glutin::WindowBuilder;
+
+      let display_ = WindowBuilder::new().build_glium().unwrap();
       let mut game = Game {
          display : display_,
-         camera : Camera::new(),
+         cam : Camera::new(),
          root : Scene::new(),
          shader_manager : ShaderManager::new()
       };
       game.shader_manager.add_defaults(&game.display);
       game
+   }
+   fn draw(&self) {
+      use glium::Surface;
+      //self.root.draw();
+      let init_m = self.cam.get_m();
+      let mut target = self.display.draw();
+      target.clear_color(0.0, 0.0, 1.0, 1.0);
+
+      for game_obj in self.root.items {
+         let obj_m = game_obj.cam.get_m();
+         let final_m = mul_matrices(&init_m, &obj_m);
+
+         if let GameObjectType::Model(ref m) = game_obj.data {
+            let shape = m.shape.clone().unwrap();
+
+            //draw(&shape, "data/opengl.png");
+            use glium::VertexBuffer as VB;
+            let vert_buff = VB::new(&self.display,
+                                    &shape.vertices)
+                                   .unwrap();
+
+            use glium::index::{NoIndices, PrimitiveType};
+            let indices = NoIndices(PrimitiveType::TrianglesList);
+            let ref shaders = self.shader_manager.shaders;
+            let program = shaders.get(&*m.shader_name.unwrap()).unwrap();
+
+            match m.texture_type {
+               TextureType::Image => {
+                  let u = uniform! {
+                     matrix : final_m,
+                     tex : &m.texture.unwrap()
+                  };
+                  target.draw(&vert_buff, &indices, program, &u,
+                              &Default::default()).unwrap();
+
+               },
+               TextureType::Color => {
+                  let u = uniform! { matrix : final_m };
+                  target.draw(&vert_buff, &indices, program, &u,
+                              &Default::default()).unwrap();
+               }
+               _ => { panic!("unknown texture type"); }
+            };
+
+         } else { panic!("unsupported object"); }
+
+         /*match game_obj.data {
+            Model(ref m) => {
+               let shape = m.shape.clone();
+               draw(&shape.unwrap(), "data/opengl.png");
+            }
+            _ => panic!("unsupported object")
+         };*/
+      }
+      target.finish().unwrap();
+      use glium::glutin::Event;
+      for ev in self.display.poll_events() {
+         match ev {
+            Event::Closed => panic!("exiting application"), //return,
+            _ => ()
+         }
+      }
    }
 }
 
@@ -108,29 +172,23 @@ fn main_very_old() {
 }
 
 fn main() {
-   use glium::{DisplayBuild, Surface};
-   let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
+   //use glium::{DisplayBuild, Surface};
+   //let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
 
    let mut game = Game::new();
 
    let shape = Shape::new_builtin(BuiltInShape::Triangle);
    let color = (1.0, 0.0, 1.0, 0.0);
    let m = Model::new()
-            .shape(shape)
-            .color(color)
+            .shape(shape).color(color)
             .finalize(&mut game.shader_manager, &game.display);
 
+   let triangle = GameObject::new(GameObjectType::Model(m));
+   game.root.items.push(triangle);
+
+   game.draw();
+
+   
    //draw(&m.shape.unwrap(), "data/opengl.png");
-
-   let triangle = GameObject::new(ObjectType::Model(m));
-   game.scene.items.push(triangle);
-
-   match game.scene.items[0].object_type {
-      ObjectType::Model(ref m) => {
-         let shape = m.shape.clone();
-         draw(&shape.unwrap(), "data/opengl.png");
-      }
-      _ => panic!("unsupported object")
-   };
 }
 

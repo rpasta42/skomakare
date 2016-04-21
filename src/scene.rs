@@ -33,6 +33,14 @@ pub struct Scene {
 }
 impl Scene {
    pub fn new() -> Scene {
-      items : Vec::new()
+      Scene {
+         items : Vec::new()
+      }
+   }
+   pub fn draw() {
+      
    }
 }
+
+
+

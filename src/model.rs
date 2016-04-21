@@ -1,5 +1,6 @@
 use types::*;
 use shaders::*;
+use utils::img_path_to_texture;
 use glium::texture::Texture2d;
 use glium::backend::glutin_backend::GlutinFacade;
 use std::cell::RefCell;
@@ -32,7 +33,9 @@ impl Shape {
    pub fn add(&mut self, v : ColorVertex) {
       self.vertices.push(v);
    }
-   pub fn add_coords(&mut self, x1 : Coord, y1 : Coord, x2 : Coord, y2 : Coord) {
+   pub fn add_coords(&mut self, x1 : Coord, y1 : Coord,
+                     x2 : Coord, y2 : Coord)
+   {
       self.vertices.push(ColorVertex::new(x1, y1, x2, y2));
    }
    pub fn print(&self) {
@@ -40,19 +43,26 @@ impl Shape {
    }
 }
 
+#[derive(PartialEq)]
+pub enum TextureType {
+   None, Image, Color
+}
+
 //#[derive(Clone)]
 pub struct Model {
    pub shape : Option<Shape>,
-   color : Option<Color>,
-   img_path : Option<&'static str>,
-   texture : Option<Texture2d>,
-   shader_name : Option<String>
+   pub texture_type : TextureType,
+   pub color : Option<Color>,
+   pub img_path : Option<&'static str>,
+   pub texture : Option<Texture2d>,
+   pub shader_name : Option<String>
 }
 impl Model {
    pub fn new() -> Model {
       Model {
          shape : None, color : None, img_path : None,
-         texture : None, shader_name : None
+         texture : None, shader_name : None,
+         texture_type : TextureType::None
       }
    }
    pub fn shape(&mut self, shape_ : Shape) -> &mut Model {
@@ -66,36 +76,41 @@ impl Model {
    }
    //pub fn shader_name(&mut self, shader_name_ : String) -> &mut Model { self.shader_name = Some(shader_name_); self }
 
-   pub fn finalize(&mut self, shader_manager : &mut ShaderManager, display : &GlutinFacade)
+   pub fn finalize(&mut self, sm : &mut ShaderManager, display : &GlutinFacade)
       -> Model
    {
       //calculate missing stuff and make sure we didn't get too many arguments
-      let mut has_color = false;
-      let mut has_img = false;
+      let mut texture_type = TextureType::None;
 
-      if let Some(color) = self.color {
-         has_color = true;
-
-         let name = format!("color-{}{}{}{}", color.0, color.1, color.2, color.3);
+      if let Some(c) = self.color {
+         texture_type = TextureType::Color;
+         let name = format!("color-{}{}{}{}", c.0, c.1, c.2, c.3);
          self.shader_name = Some(name.to_string());
 
-         if let Some(_) = shader_manager.shaders.get(&*name) {}
+         if let Some(_) = sm.shaders.get(&*name) {}
          else {
-            let frag_shader_src = frag_shader_color(color);
-            shader_manager.add_shader(display, name, VERT_SH_COLOR, &frag_shader_src);
+            let frag_sh_src = frag_shader_color(c);
+            sm.add_shader(display, name, VERT_SH_COLOR, &frag_sh_src);
          }
       }
-      if let Some(img_path) = self.img_path {
-         has_img = true;
+      let texture = if let Some(img_path) = self.img_path {
+         if texture_type == TextureType::Color {
+            panic!("Cannot have texture image and color");
+         }
+         texture_type = TextureType::Image;
          self.shader_name = Some("texture".to_string());
-      }
-      if (has_color && has_img) || (!has_color && !has_img) {
-         panic!("Model needs to either have color or img_path but not both");
+         Some(img_path_to_texture(img_path, display))
+      } else { None };
+
+      if texture_type == TextureType::None {
+         panic!("Model needs to either have color or img_path");
       }
 
       Model {
          shape: self.shape.clone(), color: self.color,
-         img_path: self.img_path, texture: None, shader_name: self.shader_name.clone()
+         img_path: self.img_path, texture: texture,
+         shader_name: self.shader_name.clone(),
+         texture_type: texture_type
       }
    }
    //fn draw() {}
