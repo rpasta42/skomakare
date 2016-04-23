@@ -58,6 +58,7 @@ pub struct Model {
    pub texture : Option<Texture2d>,
    pub shader_name : Option<String>
 }
+
 impl Model {
    pub fn new() -> Model {
       Model {

@@ -68,21 +68,39 @@ impl Game {
             let shader_name = m.shader_name.clone().unwrap();
             let program = shaders.get(&*shader_name).unwrap();
 
+
+            /*let i = 0.0f32;
+            let ma = [[1.0, 0.0, 0.0, 0.0],
+                      [0.0, 1.0, 0.0, 0.0],
+                      [0.0, 0.0, 1.0, 0.0],
+                      [0.0, 0.0, 0.0, 1.0f32]];*/
+            let ma = final_m;
+
             match m.texture_type {
                TextureType::Image => {
                   let t = match *m.get_texture() {
                      Some(ref x) => x, None => panic!("z")
                   };
-                  let u = uniform! {
-                     matrix : final_m,
+                  /*let u = uniform! {
+                     matrix : //final_m,
                      tex : t
+                  };*/
+                  let i = 0.0f32;
+                  let u = uniform! {
+                     matrix: ma,
+                     tex: t
                   };
+
                   target.draw(&vert_buff, &indices, program, &u,
                               &Default::default()).unwrap();
 
                },
                TextureType::Color => {
-                  let u = uniform! { matrix : final_m };
+                  //let u = uniform! { matrix : final_m };
+                  let u = uniform! {
+                      matrix: ma
+                  };
+
                   target.draw(&vert_buff, &indices, program, &u,
                               &Default::default()).unwrap();
                }
@@ -114,7 +132,7 @@ fn draw(m : &Shape, img_path : &str) {
    let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
 
    //let image = img_path_to_image(img_path);
-   //let texture = Texture2d::new(&display, image).unwrap(); 
+   //let texture = Texture2d::new(&display, image).unwrap();
    let texture = img_path_to_texture(img_path, &display);
 
    let vertex_buffer = glium::VertexBuffer::new(&display, &m.vertices).unwrap();
@@ -181,18 +199,28 @@ fn main() {
    let mut game = Game::new();
 
    let shape = Shape::new_builtin(BuiltInShape::Triangle);
-   let color = (1.0, 0.0, 1.0, 0.0);
+   let color = (1.0, 0.0, 0.0, 1.0);
+
    let m = Model::new()
-            .shape(shape).color(color)
+            .shape(shape).color(color) //.img_path("data/opengl.png")
             .finalize(&mut game.shader_manager, &game.display);
 
    let triangle = GameObject::new(GameObjectType::Model(m));
    game.root.items.push(triangle);
 
+   use std::time::Duration;
+   use std::time::SystemTime;
+   let mut start = SystemTime::now();
+
    loop {
+      let elapsed = now.duration_since(start).unwrap().subsec_nanos();
+      if elapsed > 1000000000 {
+         println!("{}", elapsed);
+         start = now;
+      }
       game.draw();
    }
-   
+
    //draw(&m.shape.unwrap(), "data/opengl.png");
 }
 

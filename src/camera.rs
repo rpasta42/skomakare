@@ -11,7 +11,7 @@ pub struct Camera {
 }
 impl Camera {
    pub fn new() -> Camera {
-      Camera { pos: [0.0, 0.0], rot : 0.0, size : [0.0, 0.0] }
+      Camera { pos: [0.0, 0.0], rot : 0.0, size : [1.0, 1.0] }
    }
    pub fn set_position(&mut self, pos_ : &Point) {
       self.pos = [0.0, 0.0];
