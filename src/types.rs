@@ -12,21 +12,33 @@ pub fn mul_vector(v : &Vector, m : &Matrix) -> Vector {
    for i in 0..4 {
       let mut sum = 0.0;
       for j in 0..4 {
-         sum += v[j] * m[i][j];
+         sum += m[i][j] * v[j];
       }
       ret.push(sum);
    }
    [ret[0], ret[1], ret[2], ret[3]]
 }
+
+fn rotate_matrix(m : &Matrix) -> Matrix {
+   let mut ret = Vec::new();
+
+   for i in 0..4 {
+      let mut row = Vec::new();
+      for j in 0..4 {
+         row.push(m[j][i]);
+      }
+      ret.push([row[0], row[1], row[2], row[3]]);
+   }
+   [ret[0], ret[1], ret[2], ret[3]]
+}
+
 pub fn mul_matrices(m1 : &Matrix, m2 : &Matrix) -> Matrix {
    let mut ret = Vec::new();
    for i in 0..4 {
      ret.push(mul_vector(&m2[i], m1));
    }
-   [ret[0], ret[1], ret[2], ret[3]]
+   rotate_matrix(&[ret[0], ret[1], ret[2], ret[3]])
 }
-
-//fn add_vec(v1 : &Vector, v2 : &Vector) {}
 
 #[derive(Copy, Clone)]
 pub struct ColorVertex {
@@ -54,7 +66,8 @@ impl ColorVertex {
       }
    }
    pub fn print(&self) {
-      println!("(x:{}, y:{}, tex_pos x: {}, tex_pos y: {})", self.pos[0], self.pos[1], self.tex_pos[0], self.tex_pos[1]);
+      println!("(x:{}, y:{}, tex_pos x: {}, tex_pos y: {})",
+               self.pos[0], self.pos[1], self.tex_pos[0], self.tex_pos[1]);
    }
 }
 

@@ -2,15 +2,6 @@ use types::*;
 use model::*;
 use camera::*;
 
-/*trait GameObject {
-   fn set_position(x : Point);
-   fn move(x : Point);
-   fn set_rotation(x : Coord);
-   fn rotate(degrees : Coord);
-   fn set_size(scale : Coord);
-   fn resize(scale_factor : Coord);
-}*/
-
 pub enum GameObjectType {
    Model(Model), Scene(Scene), //Camera(Camera) //Physics(u32), Undecided
 }
@@ -37,9 +28,7 @@ impl Scene {
          items : Vec::new()
       }
    }
-   pub fn draw() {
-      
-   }
+   pub fn draw() {}
 }
 
 

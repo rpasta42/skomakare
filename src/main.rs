@@ -25,7 +25,8 @@ struct Game {
    display : Display,
    root : Scene,
    shader_manager : ShaderManager,
-   cam : Camera
+   cam : Camera,
+   clear_color : Color
 }
 impl Game {
    fn new() -> Game {
@@ -37,7 +38,8 @@ impl Game {
          display : display_,
          cam : Camera::new(),
          root : Scene::new(),
-         shader_manager : ShaderManager::new()
+         shader_manager : ShaderManager::new(),
+         clear_color : (0.0, 0.0, 1.0, 1.0) //blue
       };
       game.shader_manager.add_defaults(&game.display);
       game
@@ -47,11 +49,14 @@ impl Game {
       //self.root.draw();
       let init_m = self.cam.get_m();
       let mut target = self.display.draw();
-      target.clear_color(0.0, 0.0, 1.0, 1.0);
+      let cc = self.clear_color;
+      target.clear_color(cc[0], cc[1], cc[2], cc[3]);
 
       for game_obj in &self.root.items {
          let obj_m = game_obj.cam.get_m();
-         let final_m = mul_matrices(&init_m, &obj_m);
+         //let final_m = mul_matrices(&init_m, &obj_m);
+         //let final_m = obj_m;
+         let final_m = mul_matrices(&obj_m, &init_m);
 
          if let GameObjectType::Model(ref m) = game_obj.data {
             let shape = m.shape.clone().unwrap();
@@ -68,26 +73,13 @@ impl Game {
             let shader_name = m.shader_name.clone().unwrap();
             let program = shaders.get(&*shader_name).unwrap();
 
-
-            /*let i = 0.0f32;
-            let ma = [[1.0, 0.0, 0.0, 0.0],
-                      [0.0, 1.0, 0.0, 0.0],
-                      [0.0, 0.0, 1.0, 0.0],
-                      [0.0, 0.0, 0.0, 1.0f32]];*/
-            let ma = final_m;
-
             match m.texture_type {
                TextureType::Image => {
                   let t = match *m.get_texture() {
                      Some(ref x) => x, None => panic!("z")
                   };
-                  /*let u = uniform! {
-                     matrix : //final_m,
-                     tex : t
-                  };*/
-                  let i = 0.0f32;
                   let u = uniform! {
-                     matrix: ma,
+                     matrix: final_m,
                      tex: t
                   };
 
@@ -96,11 +88,7 @@ impl Game {
 
                },
                TextureType::Color => {
-                  //let u = uniform! { matrix : final_m };
-                  let u = uniform! {
-                      matrix: ma
-                  };
-
+                  let u = uniform! { matrix : final_m };
                   target.draw(&vert_buff, &indices, program, &u,
                               &Default::default()).unwrap();
                }
@@ -181,6 +169,7 @@ fn draw(m : &Shape, img_path : &str) {
    }
 }
 
+#[allow(dead_code)]
 fn main_very_old() {
    use glium::{DisplayBuild, Surface};
    let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
@@ -193,16 +182,13 @@ fn main_very_old() {
 }
 
 fn main() {
-   //use glium::{DisplayBuild, Surface};
-   //let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
-
    let mut game = Game::new();
 
    let shape = Shape::new_builtin(BuiltInShape::Triangle);
-   let color = (1.0, 0.0, 0.0, 1.0);
+   let red = (1.0, 0.0, 0.0, 1.0);
 
    let m = Model::new()
-            .shape(shape).color(color) //.img_path("data/opengl.png")
+            .shape(shape).color(red) //.img_path("data/opengl.png")
             .finalize(&mut game.shader_manager, &game.display);
 
    let triangle = GameObject::new(GameObjectType::Model(m));
@@ -211,13 +197,26 @@ fn main() {
    use std::time::Duration;
    use std::time::SystemTime;
    let mut start = SystemTime::now();
+   let one_tenth_sec = 100000000;
+   let mut moved = false;
+   let mut rotd = false;
 
    loop {
-      let elapsed = now.duration_since(start).unwrap().subsec_nanos();
-      if elapsed > 1000000000 {
+      /*let elapsed = start.elapsed().unwrap().subsec_nanos();
+      if elapsed > one_tenth_sec {
          println!("{}", elapsed);
-         start = now;
+         start = SystemTime::now();
+      }*/
+      let elapsed = start.elapsed().unwrap().as_secs();
+
+      if elapsed > 1 && !moved {
+         game.root.items[0].cam.translate(&[1.0, 0.0]);
+         moved = true;
       }
+      /*if elapsed > 2 && !rotd {
+         game.root.items[0].cam.rotate(90.0);
+         rotd = true;
+      }*/
       game.draw();
    }
 

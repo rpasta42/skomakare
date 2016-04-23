@@ -16,17 +16,17 @@ impl Camera {
    pub fn set_position(&mut self, pos_ : &Point) {
       self.pos = [0.0, 0.0];
       //self.transform = Camera::get_identity_m();
-      self.move_(pos_);
+      self.translate(pos_);
    }
-   pub fn move_(&mut self, pos_ : &Point) {
+   pub fn translate(&mut self, pos_ : &Point) {
       self.pos[0] += pos_[0];
       self.pos[1] += pos_[1];
    }
-   pub fn set_rotation(&mut self, rot_ : &Coord) {
-      self.rot = *rot_;
+   pub fn set_rotation(&mut self, rot_ : Coord) {
+      self.rot = rot_;
    }
-   pub fn rotate(&mut self, rot_ : &Coord) {
-      self.rot += *rot_;
+   pub fn rotate(&mut self, rot_ : Coord) {
+      self.rot += rot_;
    }
    pub fn set_size(&mut self, size_ : &Point) {
       self.size = *size_;
@@ -45,7 +45,7 @@ impl Camera {
       let v = self.pos;
       [[1.0, 0.0, 0.0, v[0]],
        [0.0, 1.0, 0.0, v[1]],
-       [0.0, 0.0, 1.0, 1.0 ],
+       [0.0, 0.0, 1.0, 0.0 ],
        [0.0, 0.0, 0.0, 1.0 ]]
       //mul_vector(self.get_v(), pos_m)
    }
