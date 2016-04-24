@@ -27,7 +27,9 @@ struct Game {
    root : Scene,
    shader_manager : ShaderManager,
    cam : Camera,
-   clear_color : Color
+   clear_color : Color,
+   //since we can't store game objects in lisp, we use this to keep track of objects
+   script_obj_id : i64
 }
 impl Game {
    fn new() -> Game {
@@ -40,7 +42,8 @@ impl Game {
          cam : Camera::new(),
          root : Scene::new(),
          shader_manager : ShaderManager::new(),
-         clear_color : (0.0, 0.0, 1.0, 1.0) //blue
+         clear_color : (0.0, 0.0, 1.0, 1.0), //blue
+         script_obj_id : 0
       };
       game.shader_manager.add_defaults(&game.display);
       game
@@ -214,46 +217,114 @@ fn engine_main() {
    //draw(&m.shape.unwrap(), "data/opengl.png");
 }
 
-type ObjId = u32;
+use std::sync::mpsc::{Sender, Receiver, channel};
+use lambda_oxide::types::{Sexps};
+use lambda_oxide::main::Env;
+use std::cell::RefCell;
 
-enum RenderCmds {
-   Obj(String), Move(ObjId, Point), Rotate(ObjId, Coord), Scale(ObjId, Point)
+type ObjId = u32;
+type CmdSender = Sender<RenderCmd>;
+//type CmdReceiver = Receiver<ObjId>;
+type CmdReceiver = Receiver<RenderCmd>;
+
+//Obj(<triangle|square|circle>, <color|pic_path>)
+enum RenderCmd {
+   Obj(String, String), Move(ObjId, Point), Rotate(ObjId, Coord),
+   Scale(ObjId, Point), Exit
 }
 
-fn setup_game_script_env(game : &Game) -> RefCell<Env> {
-   use lambda_oxide::main::setup_env;
-   use lambda_oxide::{Callable};
-   use lambda_oxide::types::{Sexps, arg_extractor};
+//TODO: add this to core of LambdaOxide
+//struct ExtractedArgs { strings : Vec<Strings>, floats : Vec<f64>, exps : Vec<Sexps> }
+//arg_extract(args : Vec<Sexps>, format : Vec<String>) -> ExtractedArgs;
 
-   let env = setup_env();
+fn arg_extract_str(args : Vec<Sexps>, index : usize) -> Option<String> {
+   if let Sexps::Str(s) = args[index] {
+      Some(s)
+   } else { None }
+}
+
+fn setup_game_script_env(game : &Game, sender : &CmdSender, curr_id : i64) -> RefCell<Env> {
+   use lambda_oxide::main::{Callable, Root};
+   use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err};
+
+   let env = lambda_oxide::main::setup_env();
    //shape(<triangle|square|circle>, <color|pic_path>)
-   let shape = |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
+   let shape_ = |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
       let args = arg_extractor(&args_).unwrap();
+      if args.len() < 2 { return err("shape needs 2 arguments"); }
 
-   }
+      let shape_type = arg_extract_str(args, 0);
+      let color_type = arg_extract_str(args, 1);
+      let cmd = RenderCmd::Obj(shape_type, color_type);
+      sender.send(cmd).unwrap();
+      game.script_obj_id += 1;
+      let ret = Sexps::Int(game.script_obj_id);
+      ret
+   };
    env.table_add(0, "shape", Callable::BuiltIn(0, Box::new(shape_)));
 
+   let halt_ = |args : Sexps, root : Root, table : EnvId| -> Sexps {
+      let cmd = RenderCmd::Exit;
+      sender.send(cmd).unwrap();
+      err("halting")
+   };
+   env.table_add(0, "exit", Callable::BuiltIn(0, Box::new(halt_)));
+
+   env
 }
 
 fn main() {
    let mut game = Game::new();
 
    //use std::sync::mpsc;
-   use std::sync::mpsc::{Sender, Receiver, channel};
    use std::thread::Builder;
 
-   let (tx, rx) : (Sender<ObjId>, Receiver<RenderCmds>) = channel();
+   let (tx, rx) : (CmdReceiver, CmdSender) = channel();
 
    let child = Builder::new().stack_size(8*32*1024*1024).spawn(move || {
       use lambda_oxide::main;
 
       let env = setup_game_script_env(&game);
-
       main::interpreter(Some(env));
-
    }).unwrap();
 
-   engine_main();
-   child.join().unwrap();
+   //engine_main();
+   loop {
+      let script_cmd_res = rx.try_recv();
+      if let Ok(script_cmd) = script_cmd_res {
+         use RenderCmd::*;
 
+         match script_cmd {
+            Obj(shape_type, color_or_texture) => {
+               let model_builder = Model::new();
+
+               let shape = match shape_type {
+                  "triangle" => Shape::new_builtin(BuiltInShape::Triangle),
+                  _ => panic!("unsuported shape")
+               };
+               model_builder.shape(shape);
+
+               let color_opt = match color_or_texture {
+                  "red"    => Some((1.0, 0.0, 0.0, 1.0)),
+                  "green"  => Some((0.0, 1.0, 0.0, 1.0)),
+                  "blue"   => Some((0.0, 0.0, 1.0, 1.0)),
+                  _        => None
+               };
+               if let Some(color) = color_opt {
+                  model_builder.color(color);
+               } else {
+                  model_builder.img_path(color_or_texture);
+               }
+               let model = model_builder.finalize();
+               let game_object = GameObject::new(GameObjectType::Model(model));
+               game.root.items.push(game_object);
+            },
+            Exit => break,
+            _ => panic!("unsuported command")
+         }
+      }
+      game.draw();
+   }
+   child.join().unwrap();
 }
+
