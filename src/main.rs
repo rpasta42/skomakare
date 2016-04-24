@@ -203,35 +203,52 @@ fn engine_main() {
    let mut rotd = false;
 
    loop {
-      /*let elapsed = start.elapsed().unwrap().subsec_nanos();
-      if elapsed > one_tenth_sec {
-         println!("{}", elapsed);
-         start = SystemTime::now();
-      }*/
       let elapsed = start.elapsed().unwrap().as_secs();
-
       if elapsed > 1 && !moved {
          game.root.items[0].cam.translate(&[1.0, 0.0]);
          moved = true;
       }
-      /*if elapsed > 2 && !rotd {
-         game.root.items[0].cam.rotate(90.0);
-         rotd = true;
-      }*/
+      //if elapsed > 2 && !rotd {game.root.items[0].cam.rotate(90.0); rotd = true;}
       game.draw();
    }
-
    //draw(&m.shape.unwrap(), "data/opengl.png");
 }
 
+type ObjId = u32;
+
+enum RenderCmds {
+   Obj(String), Move(ObjId, Point), Rotate(ObjId, Coord), Scale(ObjId, Point)
+}
+
+fn setup_game_script_env(game : &Game) -> RefCell<Env> {
+   use lambda_oxide::main::setup_env;
+   use lambda_oxide::{Callable};
+   use lambda_oxide::types::{Sexps, arg_extractor};
+
+   let env = setup_env();
+   //shape(<triangle|square|circle>, <color|pic_path>)
+   let shape = |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
+      let args = arg_extractor(&args_).unwrap();
+
+   }
+   env.table_add(0, "shape", Callable::BuiltIn(0, Box::new(shape_)));
+
+}
 
 fn main() {
-   let stack_size = 8*32*1024*1024;
+   let mut game = Game::new();
 
-   use std::Builder;
-   let child = Builder::new().stack_size(stack_size).spawn(move || {
+   //use std::sync::mpsc;
+   use std::sync::mpsc::{Sender, Receiver, channel};
+   use std::thread::Builder;
+
+   let (tx, rx) : (Sender<ObjId>, Receiver<RenderCmds>) = channel();
+
+   let child = Builder::new().stack_size(8*32*1024*1024).spawn(move || {
       use lambda_oxide::main;
-      let env = main::setup_env();
+
+      let env = setup_game_script_env(&game);
+
       main::interpreter(Some(env));
 
    }).unwrap();
