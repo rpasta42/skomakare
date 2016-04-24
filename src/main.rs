@@ -2,6 +2,7 @@
 #[macro_use]
 extern crate glium;
 extern crate image;
+extern crate lambda_oxide;
 
 use model::*;
 use shaders::*;
@@ -50,7 +51,7 @@ impl Game {
       let init_m = self.cam.get_m();
       let mut target = self.display.draw();
       let cc = self.clear_color;
-      target.clear_color(cc[0], cc[1], cc[2], cc[3]);
+      target.clear_color(cc.0, cc.1, cc.2, cc.3);
 
       for game_obj in &self.root.items {
          let obj_m = game_obj.cam.get_m();
@@ -181,7 +182,7 @@ fn main_very_old() {
    draw(&m, "data/opengl.png");
 }
 
-fn main() {
+fn engine_main() {
    let mut game = Game::new();
 
    let shape = Shape::new_builtin(BuiltInShape::Triangle);
@@ -223,3 +224,19 @@ fn main() {
    //draw(&m.shape.unwrap(), "data/opengl.png");
 }
 
+
+fn main() {
+   let stack_size = 8*32*1024*1024;
+
+   use std::Builder;
+   let child = Builder::new().stack_size(stack_size).spawn(move || {
+      use lambda_oxide::main;
+      let env = main::setup_env();
+      main::interpreter(Some(env));
+
+   }).unwrap();
+
+   engine_main();
+   child.join().unwrap();
+
+}
