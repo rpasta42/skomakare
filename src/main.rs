@@ -4,6 +4,8 @@ extern crate glium;
 extern crate image;
 extern crate lambda_oxide;
 
+use std::collections::HashMap;
+
 use model::*;
 use shaders::*;
 use types::*;
@@ -28,9 +30,10 @@ struct Game {
    shader_manager : ShaderManager,
    cam : Camera,
    clear_color : Color,
-   //since we can't store game objects in lisp, we use this to keep track of objects
-   script_obj_id : i64
+   //since we can't store game objects in lisp, we track everything by name
+   script_objs : HashMap<String, usize>
 }
+
 impl Game {
    fn new() -> Game {
       use glium::{DisplayBuild, Surface};
@@ -43,7 +46,7 @@ impl Game {
          root : Scene::new(),
          shader_manager : ShaderManager::new(),
          clear_color : (0.0, 0.0, 1.0, 1.0), //blue
-         script_obj_id : 0
+         script_objs : HashMap::new()
       };
       game.shader_manager.add_defaults(&game.display);
       game
@@ -218,69 +221,74 @@ fn engine_main() {
 }
 
 use std::sync::mpsc::{Sender, Receiver, channel};
-use lambda_oxide::types::{Sexps, GameCmdSender, GameCommand};
-use lambda_oxide::main::Env;
+use lambda_oxide::types::Sexps;
+use lambda_oxide::main::{Env, arg_extract_str};
 use std::cell::RefCell;
 
-
-type CmdReceiver = Receiver<GameCommand>;
-/*type GameObjId = u32;
-type GameCoord = f32;
-type GamePoint = [GameCoord; 2];
-//Obj(<triangle|square|circle>, <color|pic_path>)
+type ObjName = String;
+//Obj(name, <triangle|square|circle>, <color|pic_path>)
+#[derive(Clone)]
 enum GameCmd {
-   Obj(String, String), Move(GameObjId, GamePoint),
-   Rotate(GameObjId, GameCoord),
-   Scale(GameObjId, GamePoint), Exit
+   Obj(String, String, String), Move(String, Point),
+   Rotate(String, Coord),
+   Scale(String, Point), Exit
 }
-type GameCmdSender = Sender<GameCmd>;
-//type CmdReceiver = Receiver<ObjId>;
-type CmdReceiver = Receiver<GameCmd>;*/
+type CmdSender = Sender<GameCmd>;
+type CmdReceiver = Receiver<GameCmd>;
 
-//TODO: add this to core of LambdaOxide
-//struct ExtractedArgs { strings : Vec<Strings>, floats : Vec<f64>, exps : Vec<Sexps> }
-//arg_extract(args : Vec<Sexps>, format : Vec<String>) -> ExtractedArgs;
-
-fn arg_extract_str(args : &Vec<Sexps>, index : usize) -> Option<String> {
-   if let Sexps::Str(ref s) = args[index] {
+pub fn arg_extract_float(args : &Vec<Sexps>, index : usize) -> Option<f64> {
+   if let Sexps::Float(ref s) = args[index] { 
       Some(s.clone())
    } else { None }
 }
 
-fn setup_game_script_env(sender : GameCmdSender) -> RefCell<Env> {
+fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
    use lambda_oxide::main::{Callable, Root};
    use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, print_compact_tree};
 
-   //let script_obj_id : i64 = 0;
+   let script_obj_id : i64 = 0;
 
    let env = lambda_oxide::main::setup_env();
 
-   //shape(<triangle|square|circle>, <color|pic_path>)
+   let sender_shape = sender.clone();
    let shape_ = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
       if let Sexps::Err(ref s) = args_ { println!("got error"); return err(s); }
 
       let args = arg_extractor(&args_).unwrap();
-      if args.len() < 2 { return err("shape needs 2 arguments"); }
+      if args.len() < 3 { return err("shape needs 3 arguments"); }
 
-      let shape_type = arg_extract_str(&args, 0).unwrap(); //TODO: check types
-      let color_type = arg_extract_str(&args, 1).unwrap(); //and notify user if wrong
+      let shape_name = arg_extract_str(&args, 0).unwrap();
+      let shape_type = arg_extract_str(&args, 1).unwrap(); //TODO: check types
+      let color_type = arg_extract_str(&args, 2).unwrap(); //and notify user if wrong
 
-      let cmd = GameCommand::Obj(shape_type, color_type);
-      let cmd_exp = Sexps::GameCmd(cmd.clone(), sender.clone());
+      let cmd = GameCmd::Obj(shape_name.clone(), shape_type, color_type);
+      sender_shape.send(cmd.clone());
 
-      sender.send(cmd.clone());
-      //kkerr sender.send(cmd).unwrap();
-      //kkerr game.script_obj_id += 1;
-      //kkerr let ret = Sexps::Int(game.script_obj_id);
-      //let ret = Sexps::Int(script_obj_id); //kkerr replace
-      //script_obj_id+=1;
-      //ret
-      cmd_exp
+      Sexps::Str(shape_name.clone())
    };
    env.borrow_mut().table_add(0, "shape", Callable::BuiltIn(0, Box::new(shape_)));
 
+   let sender_move = sender.clone();
+   //object_name, x, y
+   let move_ = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
+      if let Sexps::Err(ref s) = args_ { println!("got error"); return err(s); }
+
+      let args = arg_extractor(&args_).unwrap();
+      if args.len() < 2 { return err("move needs 3 arguments"); }
+
+      let shape_name = arg_extract_str(&args, 0).unwrap();
+      let x = arg_extract_float(&args, 1).unwrap(); //TODO: check types
+      let y = arg_extract_float(&args, 2).unwrap(); //and notify user if wrong
+
+      let cmd = GameCmd::Move(shape_name, [x as f32, y as f32]);
+      sender_move.send(cmd.clone());
+
+      Sexps::Str("success".to_string())
+   };
+   env.borrow_mut().table_add(0, "move", Callable::BuiltIn(0, Box::new(move_)));
+
    let halt_ = move |args : Sexps, root : Root, table : EnvId| -> Sexps {
-      let cmd = GameCommand::Exit;
+      let cmd = GameCmd::Exit;
       //kkerr sender.send(cmd).unwrap();
       err("halting")
    };
@@ -295,7 +303,7 @@ fn main() {
    //use std::sync::mpsc;
    use std::thread::Builder;
 
-   let (tx, rx) : (GameCmdSender, CmdReceiver) = channel();
+   let (tx, rx) : (CmdSender, CmdReceiver) = channel();
 
    let child = Builder::new().stack_size(8*32*1024*1024).spawn(move || {
       use lambda_oxide::main;
@@ -308,10 +316,10 @@ fn main() {
    loop {
       let script_cmd_res = rx.try_recv();
       if let Ok(script_cmd) = script_cmd_res {
-         use lambda_oxide::types::GameCommand::*;
+         use GameCmd::*;
 
          match script_cmd {
-            Obj(shape_type, color_or_texture) => {
+            Obj(shape_name, shape_type, color_or_texture) => {
                let mut model_builder = Model::new();
 
                let shape = match &*shape_type {
@@ -334,7 +342,13 @@ fn main() {
                let model = model_builder.finalize(&mut game.shader_manager, &game.display);
                let game_object = GameObject::new(GameObjectType::Model(model));
                game.root.items.push(game_object);
+
+               game.script_objs.insert(shape_name, game.root.items.len()-1);
             },
+            Move(shape_name, p) => {
+               let index = game.script_objs.get(&shape_name).unwrap();
+               game.root.items[*index].cam.translate(&p);
+            }
             Exit => break,
             _ => panic!("unsuported command")
          }
