@@ -119,7 +119,7 @@ impl Game {
    }
 }
 
-fn draw(m : &Shape, img_path : &str) {
+fn draw(m : &Shape, img_path : String) {
    use glium::{DisplayBuild, Surface};
    let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
 
@@ -182,7 +182,7 @@ fn main_very_old() {
    m.add_coords(-0.5, -0.5, 0.0, 0.0);
    m.add_coords(0.0, 0.5, 0.0, 1.0);
    m.add_coords(0.5, -0.25, 1.0, 0.0);
-   draw(&m, "data/opengl.png");
+   draw(&m, "data/opengl.png".to_string());
 }
 
 fn engine_main() {
@@ -218,60 +218,69 @@ fn engine_main() {
 }
 
 use std::sync::mpsc::{Sender, Receiver, channel};
-use lambda_oxide::types::{Sexps};
+use lambda_oxide::types::{Sexps, GameCmdSender, GameCommand};
 use lambda_oxide::main::Env;
 use std::cell::RefCell;
 
-type ObjId = u32;
-type CmdSender = Sender<RenderCmd>;
-//type CmdReceiver = Receiver<ObjId>;
-type CmdReceiver = Receiver<RenderCmd>;
 
+type CmdReceiver = Receiver<GameCommand>;
+/*type GameObjId = u32;
+type GameCoord = f32;
+type GamePoint = [GameCoord; 2];
 //Obj(<triangle|square|circle>, <color|pic_path>)
-enum RenderCmd {
-   Obj(String, String), Move(ObjId, Point), Rotate(ObjId, Coord),
-   Scale(ObjId, Point), Exit
+enum GameCmd {
+   Obj(String, String), Move(GameObjId, GamePoint),
+   Rotate(GameObjId, GameCoord),
+   Scale(GameObjId, GamePoint), Exit
 }
+type GameCmdSender = Sender<GameCmd>;
+//type CmdReceiver = Receiver<ObjId>;
+type CmdReceiver = Receiver<GameCmd>;*/
 
 //TODO: add this to core of LambdaOxide
 //struct ExtractedArgs { strings : Vec<Strings>, floats : Vec<f64>, exps : Vec<Sexps> }
 //arg_extract(args : Vec<Sexps>, format : Vec<String>) -> ExtractedArgs;
 
-fn arg_extract_str(args : Vec<Sexps>, index : usize) -> Option<String> {
-   if let Sexps::Str(s) = args[index] {
-      Some(s)
+fn arg_extract_str(args : &Vec<Sexps>, index : usize) -> Option<String> {
+   if let Sexps::Str(ref s) = args[index] {
+      Some(s.clone())
    } else { None }
 }
 
-fn setup_game_script_env(game : &Game, sender : &CmdSender) -> RefCell<Env> {
+fn setup_game_script_env(sender : GameCmdSender) -> RefCell<Env> {
    use lambda_oxide::main::{Callable, Root};
-   use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err};
+   use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, print_compact_tree};
+
+   //let script_obj_id : i64 = 0;
 
    let env = lambda_oxide::main::setup_env();
+
    //shape(<triangle|square|circle>, <color|pic_path>)
-
-   //let sender_ptr = sender as *const i32;
-   //let game_ptr = game as *const i32;
-
    let shape_ = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
+      if let Sexps::Err(ref s) = args_ { println!("got error"); return err(s); }
+
       let args = arg_extractor(&args_).unwrap();
       if args.len() < 2 { return err("shape needs 2 arguments"); }
 
-      let shape_type = arg_extract_str(args, 0).unwrap(); //TODO: check types
-      let color_type = arg_extract_str(args, 1).unwrap(); //and notify user if wrong
-      let cmd = RenderCmd::Obj(shape_type, color_type);
+      let shape_type = arg_extract_str(&args, 0).unwrap(); //TODO: check types
+      let color_type = arg_extract_str(&args, 1).unwrap(); //and notify user if wrong
 
+      let cmd = GameCommand::Obj(shape_type, color_type);
+      let cmd_exp = Sexps::GameCmd(cmd.clone(), sender.clone());
+
+      sender.send(cmd.clone());
       //kkerr sender.send(cmd).unwrap();
       //kkerr game.script_obj_id += 1;
       //kkerr let ret = Sexps::Int(game.script_obj_id);
-      let ret = Sexps::Int(0); //kkerr replace
-
-      ret
+      //let ret = Sexps::Int(script_obj_id); //kkerr replace
+      //script_obj_id+=1;
+      //ret
+      cmd_exp
    };
    env.borrow_mut().table_add(0, "shape", Callable::BuiltIn(0, Box::new(shape_)));
 
    let halt_ = move |args : Sexps, root : Root, table : EnvId| -> Sexps {
-      let cmd = RenderCmd::Exit;
+      let cmd = GameCommand::Exit;
       //kkerr sender.send(cmd).unwrap();
       err("halting")
    };
@@ -286,12 +295,12 @@ fn main() {
    //use std::sync::mpsc;
    use std::thread::Builder;
 
-   let (tx, rx) : (CmdSender, CmdReceiver) = channel();
+   let (tx, rx) : (GameCmdSender, CmdReceiver) = channel();
 
    let child = Builder::new().stack_size(8*32*1024*1024).spawn(move || {
       use lambda_oxide::main;
 
-      let env = setup_game_script_env(&game, &tx);
+      let env = setup_game_script_env(tx);
       main::interpreter(Some(env));
    }).unwrap();
 
@@ -299,11 +308,11 @@ fn main() {
    loop {
       let script_cmd_res = rx.try_recv();
       if let Ok(script_cmd) = script_cmd_res {
-         use RenderCmd::*;
+         use lambda_oxide::types::GameCommand::*;
 
          match script_cmd {
             Obj(shape_type, color_or_texture) => {
-               let model_builder = Model::new();
+               let mut model_builder = Model::new();
 
                let shape = match &*shape_type {
                   "triangle" => Shape::new_builtin(BuiltInShape::Triangle),
@@ -320,7 +329,7 @@ fn main() {
                if let Some(color) = color_opt {
                   model_builder.color(color);
                } else {
-                  model_builder.img_path(&*color_or_texture);
+                  model_builder.img_path(color_or_texture);
                }
                let model = model_builder.finalize(&mut game.shader_manager, &game.display);
                let game_object = GameObject::new(GameObjectType::Model(model));

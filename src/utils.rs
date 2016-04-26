@@ -52,8 +52,8 @@ fn img_path_to_image<'a>(img_path : &str) -> RawImage2d<'a, u8> {
    RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_dimensions)
 }
 
-pub fn img_path_to_texture(img_path : &str, display : &Display) -> Texture2d {
-   let image = img_path_to_image(img_path);
+pub fn img_path_to_texture(img_path : String, display : &Display) -> Texture2d {
+   let image = img_path_to_image(&*img_path);
    Texture2d::new(display, image).unwrap()
 }
 

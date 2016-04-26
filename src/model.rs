@@ -54,7 +54,7 @@ pub struct Model {
    pub shape : Option<Shape>,
    pub texture_type : TextureType,
    pub color : Option<Color>,
-   pub img_path : Option<&'static str>,
+   pub img_path : Option<String>,
    pub texture : Option<Texture2d>,
    pub shader_name : Option<String>
 }
@@ -73,7 +73,7 @@ impl Model {
    pub fn color(&mut self, color_ : Color) -> &mut Model {
       self.color = Some(color_); self
    }
-   pub fn img_path(&mut self, img_path_ : &'static str) -> &mut Model {
+   pub fn img_path(&mut self, img_path_ : String) -> &mut Model {
       self.img_path = Some(img_path_); self
    }
    //pub fn shader_name(&mut self, shader_name_ : String) -> &mut Model { self.shader_name = Some(shader_name_); self }
@@ -98,7 +98,7 @@ impl Model {
             sm.add_shader(display, name, VERT_SH_COLOR, &frag_sh_src);
          }
       }
-      let texture = if let Some(img_path) = self.img_path {
+      let texture = if let Some(img_path) = self.img_path.clone() {
          if texture_type == TextureType::Color {
             panic!("Cannot have texture image and color");
          }
@@ -113,7 +113,7 @@ impl Model {
 
       Model {
          shape: self.shape.clone(), color: self.color,
-         img_path: self.img_path, texture: texture,
+         img_path: self.img_path.clone(), texture: texture,
          shader_name: self.shader_name.clone(),
          texture_type: texture_type
       }
