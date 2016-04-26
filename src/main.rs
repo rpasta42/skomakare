@@ -1,8 +1,9 @@
-#![feature(type_ascription)]
+#![feature(type_ascription, libc)]
 #[macro_use]
 extern crate glium;
 extern crate image;
 extern crate lambda_oxide;
+extern crate libc;
 
 use std::collections::HashMap;
 
@@ -229,11 +230,12 @@ type CmdSender = Sender<GameCmd>;
 type CmdReceiver = Receiver<GameCmd>;
 
 pub fn arg_extract_float(args : &Vec<Sexps>, index : usize) -> Option<f64> {
-   if let Sexps::Float(ref s) = args[index] { 
+   if let Sexps::Float(ref s) = args[index] {
       Some(s.clone())
    } else { None }
 }
 
+#[allow(unused_variables)]
 fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
    use lambda_oxide::main::{Callable, Root};
    use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, print_compact_tree};
@@ -242,7 +244,7 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
 
    let sender_shape = sender.clone();
    let shape_ = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
-      if let Sexps::Err(ref s) = args_ { println!("got error"); return err(s); }
+      if let Sexps::Err(ref s) = args_ { return err(s); }
 
       let args = arg_extractor(&args_).unwrap();
       if args.len() < 3 { return err("shape needs 3 arguments"); }
@@ -252,7 +254,7 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
       let color_type = arg_extract_str(&args, 2).unwrap(); //and notify user if wrong
 
       let cmd = GameCmd::Obj(shape_name.clone(), shape_type, color_type);
-      sender_shape.send(cmd.clone());
+      sender_shape.send(cmd.clone()).unwrap();
 
       Sexps::Str(shape_name.clone())
    };
@@ -261,17 +263,17 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
    let sender_move = sender.clone();
    //object_name, x, y
    let move_ = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
-      if let Sexps::Err(ref s) = args_ { println!("got error"); return err(s); }
+      if let Sexps::Err(ref s) = args_ { return err(s); }
 
       let args = arg_extractor(&args_).unwrap();
-      if args.len() < 3 { return err("move needs 3 arguments"); }
+      if args.len() != 3 { return err("move needs 3 arguments"); }
 
       let shape_name = arg_extract_str(&args, 0).unwrap();
       let x = arg_extract_float(&args, 1).unwrap(); //TODO: check types
       let y = arg_extract_float(&args, 2).unwrap(); //and notify user if wrong
 
       let cmd = GameCmd::Move(shape_name, [x as f32, y as f32]);
-      sender_move.send(cmd.clone());
+      sender_move.send(cmd.clone()).unwrap();
 
       Sexps::Str("success".to_string())
    };
@@ -280,10 +282,10 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
    let sender_rotate = sender.clone();
    //object_name, degrees
    let rotate = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
-      if let Sexps::Err(ref s) = args_ { println!("got error"); return err(s); }
+      if let Sexps::Err(ref s) = args_ { return err(s); }
 
       let args = arg_extractor(&args_).unwrap();
-      if args.len() < 2 { return err("rotate needs 2 arguments"); }
+      if args.len() != 2 { return err("rotate needs 2 arguments"); }
 
       let shape_name = arg_extract_str(&args, 0).unwrap(); //TODO: check types
       let degrees = arg_extract_float(&args, 1).unwrap();  //and notify user if wrong
@@ -298,28 +300,46 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
    let sender_scale = sender.clone();
    //object_name, degrees
    let resize = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
-      if let Sexps::Err(ref s) = args_ { println!("got error"); return err(s); }
+      if let Sexps::Err(ref s) = args_ { return err(s); }
 
       let args = arg_extractor(&args_).unwrap();
-      if args.len() < 2 { return err("move needs 3 arguments"); }
+      if args.len() != 3 { return err("move needs 3 arguments"); }
 
       let shape_name = arg_extract_str(&args, 0).unwrap(); //TODO: check types
       let x = arg_extract_float(&args, 1).unwrap(); //and notify user if wrong
-      let y = arg_extract_float(&args, 1).unwrap();
+      let y = arg_extract_float(&args, 2).unwrap();
 
       let cmd = GameCmd::Scale(shape_name, [x as Coord, y as Coord]);
-      sender_scale.send(cmd.clone());
+      sender_scale.send(cmd.clone()).unwrap();
 
       Sexps::Str("success".to_string())
    };
    env.borrow_mut().table_add(0, "resize", Callable::BuiltIn(0, Box::new(resize)));
 
-   let halt_ = move |args : Sexps, root : Root, table : EnvId| -> Sexps {
+   let halt_ = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
+      if let Sexps::Err(ref s) = args_ { return err(s); }
+
       let cmd = GameCmd::Exit;
       //kkerr sender.send(cmd).unwrap();
       err("halting")
    };
    env.borrow_mut().table_add(0, "exit", Callable::BuiltIn(0, Box::new(halt_)));
+
+
+   //TODO: move this to core language
+   let sleep = |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
+      if let Sexps::Err(ref s) = args_ { return err(s); }
+
+      let args = arg_extractor(&args_).unwrap();
+      if args.len() != 1 { return err("sleep needs 1 argument"); }
+      let time = arg_extract_float(&args, 0).unwrap();//*1000000.0;
+
+      use libc::sleep;
+      unsafe { sleep(time as u32); }
+
+      Sexps::Str("success".to_string())
+   };
+   env.borrow_mut().table_add(0, "sleep", Callable::BuiltIn(0, Box::new(sleep)));
 
    env
 }
