@@ -31,9 +31,9 @@ impl Camera {
    pub fn set_size(&mut self, size_ : &Point) {
       self.size = *size_;
    }
-   pub fn scale(&mut self, size_ : &Coord) {
-      self.size[0] *= *size_;
-      self.size[1] *= *size_;
+   pub fn scale(&mut self, s : &Point) {
+      self.size[0] *= s[0];
+      self.size[1] *= s[1];
    }
    pub fn get_identity_m() -> Matrix {
       [[1.0, 0.0, 0.0, 0.0],

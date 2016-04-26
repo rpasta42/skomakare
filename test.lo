@@ -1,0 +1,5 @@
+(shape "my_trig" "triangle" "pink")
+(define t "my_trig")
+;(move "my_trig" 0.5 0.5)
+(rotate "my_trig" 10.0)
+;(scale "my_trig" 0.3)

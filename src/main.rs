@@ -103,13 +103,6 @@ impl Game {
             };
 
          } else { panic!("unsupported object"); }
-         /*match game_obj.data {
-            Model(ref m) => {
-               let shape = m.shape.clone();
-               draw(&shape.unwrap(), "data/opengl.png");
-            }
-            _ => panic!("unsupported object")
-         };*/
       }
       target.finish().unwrap();
       use glium::glutin::Event;
@@ -230,8 +223,7 @@ type ObjName = String;
 #[derive(Clone)]
 enum GameCmd {
    Obj(String, String, String), Move(String, Point),
-   Rotate(String, Coord),
-   Scale(String, Point), Exit
+   Rotate(String, Coord), Scale(String, Point), Exit
 }
 type CmdSender = Sender<GameCmd>;
 type CmdReceiver = Receiver<GameCmd>;
@@ -245,8 +237,6 @@ pub fn arg_extract_float(args : &Vec<Sexps>, index : usize) -> Option<f64> {
 fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
    use lambda_oxide::main::{Callable, Root};
    use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, print_compact_tree};
-
-   let script_obj_id : i64 = 0;
 
    let env = lambda_oxide::main::setup_env();
 
@@ -274,7 +264,7 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
       if let Sexps::Err(ref s) = args_ { println!("got error"); return err(s); }
 
       let args = arg_extractor(&args_).unwrap();
-      if args.len() < 2 { return err("move needs 3 arguments"); }
+      if args.len() < 3 { return err("move needs 3 arguments"); }
 
       let shape_name = arg_extract_str(&args, 0).unwrap();
       let x = arg_extract_float(&args, 1).unwrap(); //TODO: check types
@@ -286,6 +276,43 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
       Sexps::Str("success".to_string())
    };
    env.borrow_mut().table_add(0, "move", Callable::BuiltIn(0, Box::new(move_)));
+
+   let sender_rotate = sender.clone();
+   //object_name, degrees
+   let rotate = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
+      if let Sexps::Err(ref s) = args_ { println!("got error"); return err(s); }
+
+      let args = arg_extractor(&args_).unwrap();
+      if args.len() < 2 { return err("rotate needs 2 arguments"); }
+
+      let shape_name = arg_extract_str(&args, 0).unwrap(); //TODO: check types
+      let degrees = arg_extract_float(&args, 1).unwrap();  //and notify user if wrong
+
+      let cmd = GameCmd::Rotate(shape_name, degrees as Coord);
+      sender_rotate.send(cmd.clone());
+
+      Sexps::Str("success".to_string())
+   };
+   env.borrow_mut().table_add(0, "rotate", Callable::BuiltIn(0, Box::new(rotate)));
+
+   let sender_scale = sender.clone();
+   //object_name, degrees
+   let resize = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
+      if let Sexps::Err(ref s) = args_ { println!("got error"); return err(s); }
+
+      let args = arg_extractor(&args_).unwrap();
+      if args.len() < 2 { return err("move needs 3 arguments"); }
+
+      let shape_name = arg_extract_str(&args, 0).unwrap(); //TODO: check types
+      let x = arg_extract_float(&args, 1).unwrap(); //and notify user if wrong
+      let y = arg_extract_float(&args, 1).unwrap();
+
+      let cmd = GameCmd::Scale(shape_name, [x as Coord, y as Coord]);
+      sender_scale.send(cmd.clone());
+
+      Sexps::Str("success".to_string())
+   };
+   env.borrow_mut().table_add(0, "resize", Callable::BuiltIn(0, Box::new(resize)));
 
    let halt_ = move |args : Sexps, root : Root, table : EnvId| -> Sexps {
       let cmd = GameCmd::Exit;
@@ -348,9 +375,17 @@ fn main() {
             Move(shape_name, p) => {
                let index = game.script_objs.get(&shape_name).unwrap();
                game.root.items[*index].cam.translate(&p);
+            },
+            Rotate(shape_name, degrees) => {
+               let index = game.script_objs.get(&shape_name).unwrap();
+               game.root.items[*index].cam.rotate(degrees);
+            },
+            Scale(shape_name, p) => {
+               let index = game.script_objs.get(&shape_name).unwrap();
+               game.root.items[*index].cam.scale(&p);
             }
             Exit => break,
-            _ => panic!("unsuported command")
+            //_ => panic!("unsuported command")
          }
       }
       game.draw();
