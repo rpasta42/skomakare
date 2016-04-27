@@ -46,7 +46,7 @@ impl Game {
          cam : Camera::new(),
          root : Scene::new(),
          shader_manager : ShaderManager::new(),
-         clear_color : (0.0, 0.0, 1.0, 1.0), //blue
+         clear_color : (0.0, 0.0, 0.0, 1.0), //white
          script_objs : HashMap::new()
       };
       game.shader_manager.add_defaults(&game.display);
@@ -340,6 +340,7 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
    };
    env.borrow_mut().table_add(0, "sleep", Callable::BuiltIn(0, Box::new(sleep)));
 
+   //TODO: add this to core language
    let do_ = |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
       if let Sexps::Err(ref s) = args_ { return err(s); }
 
