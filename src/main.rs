@@ -325,7 +325,6 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
    };
    env.borrow_mut().table_add(0, "exit", Callable::BuiltIn(0, Box::new(halt_)));
 
-   //TODO: move this to core language
    let sleep = |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
       if let Sexps::Err(ref s) = args_ { return err(s); }
 
@@ -340,7 +339,6 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
    };
    env.borrow_mut().table_add(0, "sleep", Callable::BuiltIn(0, Box::new(sleep)));
 
-   //TODO: add this to core language
    let do_ = |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
       if let Sexps::Err(ref s) = args_ { return err(s); }
 
