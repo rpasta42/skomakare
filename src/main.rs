@@ -216,7 +216,7 @@ fn engine_main() {
 
 use std::sync::mpsc::{Sender, Receiver, channel};
 use lambda_oxide::types::Sexps;
-use lambda_oxide::main::{Env, arg_extract_str};
+use lambda_oxide::main::{Env, arg_extract_str, eval};
 use std::cell::RefCell;
 
 type ObjName = String;
@@ -266,7 +266,7 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
       if let Sexps::Err(ref s) = args_ { return err(s); }
 
       let args = arg_extractor(&args_).unwrap();
-      if args.len() != 3 { return err("move needs 3 arguments"); }
+      if args.len() != 3 { return err(&*format!("move needs 3 arguments but {} were given", args.len())); }
 
       let shape_name = arg_extract_str(&args, 0).unwrap();
       let x = arg_extract_float(&args, 1).unwrap(); //TODO: check types
@@ -303,7 +303,7 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
       if let Sexps::Err(ref s) = args_ { return err(s); }
 
       let args = arg_extractor(&args_).unwrap();
-      if args.len() != 3 { return err("move needs 3 arguments"); }
+      if args.len() != 3 { return err("resize needs 3 arguments"); }
 
       let shape_name = arg_extract_str(&args, 0).unwrap(); //TODO: check types
       let x = arg_extract_float(&args, 1).unwrap(); //and notify user if wrong
@@ -325,21 +325,33 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
    };
    env.borrow_mut().table_add(0, "exit", Callable::BuiltIn(0, Box::new(halt_)));
 
-
    //TODO: move this to core language
    let sleep = |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
       if let Sexps::Err(ref s) = args_ { return err(s); }
 
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 1 { return err("sleep needs 1 argument"); }
-      let time = arg_extract_float(&args, 0).unwrap();//*1000000.0;
+      let time = arg_extract_float(&args, 0).unwrap()*1000.0;
 
-      use libc::sleep;
-      unsafe { sleep(time as u32); }
+      use std::thread::sleep_ms;
+      sleep_ms(time as u32);
 
       Sexps::Str("success".to_string())
    };
    env.borrow_mut().table_add(0, "sleep", Callable::BuiltIn(0, Box::new(sleep)));
+
+   let do_ = |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
+      if let Sexps::Err(ref s) = args_ { return err(s); }
+
+      let args = arg_extractor(&args_).unwrap();
+
+      let mut result = err("empty do");
+      for arg in args {
+         result = eval(&arg, root, table);
+      }
+      result
+   };
+   env.borrow_mut().table_add(0, "do", Callable::BuiltIn(0, Box::new(do_)));
 
    env
 }
