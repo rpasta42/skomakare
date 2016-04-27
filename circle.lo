@@ -1,0 +1,18 @@
+(define red "red")
+(define green "green")
+(define blue "blue")
+
+(define triangle (lambda (name color) (shape name "triangle" color)))
+
+(define s1 (triangle "s1" red))
+(rotate s1 0.1)
+
+(define s2 (triangle "s2" red))
+(rotate s2 0.15)
+
+(define s3 (triangle "s3" red))
+(rotate s3 0.2)
+
+(define s4 (triangle "s4" red))
+(rotate s4 0.25)
+

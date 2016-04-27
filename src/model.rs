@@ -23,7 +23,7 @@ impl Shape {
             shape.add_coords(-0.5, -0.5, 0.0, 0.0);
             shape.add_coords(0.0, 0.5, 0.0, 1.0);
             shape.add_coords(0.5, -0.25, 1.0, 0.0);
-         }
+         },
          _ => { panic!("not implemented {:?}", shape_type); }
       }
       shape
