@@ -32,8 +32,6 @@ struct Game {
    shader_manager : ShaderManager,
    cam : Camera,
    clear_color : Color,
-   //since we can't store game objects in lisp, we track everything by name
-   script_objs : HashMap<String, usize>,
 }
 
 impl Game {
@@ -48,7 +46,6 @@ impl Game {
          root : Scene::new(),
          shader_manager : ShaderManager::new(),
          clear_color : (0.0, 0.0, 0.0, 1.0), //white
-         script_objs : HashMap::new(),
       };
       game.shader_manager.add_defaults(&game.display);
       game
@@ -129,20 +126,23 @@ use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, print_compact_tree, 
 use lambda_oxide::main::{Env, eval, Callable};
 use std::cell::RefCell;
 
-type ObjName = String;
+type ObjId = i64;
 //Obj(name, <triangle|square|circle>, <color|pic_path>)
 #[derive(Clone)]
 enum GameCmd {
-   Obj(String, String, String), Move(String, Point),
-   Rotate(String, Coord), Scale(String, Point), Exit
+   Obj(ObjId, String, String), Move(ObjId, Point),
+   Rotate(ObjId, Coord), Scale(ObjId, Point), Exit
 }
 type CmdSender = Sender<GameCmd>;
 type CmdReceiver = Receiver<GameCmd>;
 type EventSender = Sender<Vec<Event>>;
 type EventReceiver = Receiver<Vec<Event>>;
 
+type IdSender = Sender<ObjId>;
+type IdReceiver = Receiver<ObjId>;
+
 #[allow(unused_variables)]
-fn setup_game_script_env(sender : CmdSender, event_rec : EventReceiver) -> RefCell<Env> {
+fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdReceiver) -> RefCell<Env> {
    let env = lambda_oxide::main::setup_env();
 
    let sender_shape = sender.clone();
@@ -150,16 +150,16 @@ fn setup_game_script_env(sender : CmdSender, event_rec : EventReceiver) -> RefCe
       if let Sexps::Err(ref s) = args_ { return err(s); }
 
       let args = arg_extractor(&args_).unwrap();
-      if args.len() < 3 { return err("shape needs 3 arguments"); }
+      if args.len() != 2 { return err("shape needs 2 arguments"); }
 
-      let shape_name = arg_extract_str(&args, 0).unwrap();
-      let shape_type = arg_extract_str(&args, 1).unwrap(); //TODO: check types
-      let color_type = arg_extract_str(&args, 2).unwrap(); //and notify user if wrong
+      let id = id_r.recv().unwrap();
+      let shape_type = arg_extract_str(&args, 0).unwrap(); //TODO: check types
+      let color_type = arg_extract_str(&args, 1).unwrap(); //and notify user if wrong
 
-      let cmd = GameCmd::Obj(shape_name.clone(), shape_type, color_type);
-      sender_shape.send(cmd.clone()).unwrap();
+      let cmd = GameCmd::Obj(id, shape_type, color_type);
+      sender_shape.send(cmd).unwrap();
 
-      Sexps::Str(shape_name.clone())
+      Sexps::Int(id)
    };
    env.borrow_mut().table_add(0, "shape", Callable::BuiltIn(0, Box::new(shape_)));
 
@@ -171,11 +171,11 @@ fn setup_game_script_env(sender : CmdSender, event_rec : EventReceiver) -> RefCe
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 3 { return err(&*format!("move needs 3 arguments but {} were given", args.len())); }
 
-      let shape_name = arg_extract_str(&args, 0).unwrap();
+      let shape_id = arg_extract_float(&args, 0).unwrap() as i64;
       let x = arg_extract_float(&args, 1).unwrap(); //TODO: check types
       let y = arg_extract_float(&args, 2).unwrap(); //and notify user if wrong
 
-      let cmd = GameCmd::Move(shape_name, [x as f32, y as f32]);
+      let cmd = GameCmd::Move(shape_id, [x as f32, y as f32]);
       sender_move.send(cmd.clone()).unwrap();
 
       Sexps::Str("success".to_string())
@@ -190,10 +190,10 @@ fn setup_game_script_env(sender : CmdSender, event_rec : EventReceiver) -> RefCe
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 2 { return err("rotate needs 2 arguments"); }
 
-      let shape_name = arg_extract_str(&args, 0).unwrap(); //TODO: check types
+      let shape_id = arg_extract_float(&args, 0).unwrap() as i64; //TODO: check types
       let degrees = arg_extract_float(&args, 1).unwrap();  //and notify user if wrong
 
-      let cmd = GameCmd::Rotate(shape_name, degrees as Coord);
+      let cmd = GameCmd::Rotate(shape_id, degrees as Coord);
       sender_rotate.send(cmd.clone());
 
       Sexps::Str("success".to_string())
@@ -208,11 +208,11 @@ fn setup_game_script_env(sender : CmdSender, event_rec : EventReceiver) -> RefCe
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 3 { return err("resize needs 3 arguments"); }
 
-      let shape_name = arg_extract_str(&args, 0).unwrap(); //TODO: check types
+      let shape_id = arg_extract_float(&args, 0).unwrap() as i64; //TODO: check types
       let x = arg_extract_float(&args, 1).unwrap(); //and notify user if wrong
       let y = arg_extract_float(&args, 2).unwrap();
 
-      let cmd = GameCmd::Scale(shape_name, [x as Coord, y as Coord]);
+      let cmd = GameCmd::Scale(shape_id, [x as Coord, y as Coord]);
       sender_scale.send(cmd.clone()).unwrap();
 
       Sexps::Str("success".to_string())
@@ -230,7 +230,7 @@ fn setup_game_script_env(sender : CmdSender, event_rec : EventReceiver) -> RefCe
 
    let check_events = move |args : Sexps, root : Root, table : EnvId| -> Sexps {
       //let e_res = event_rec.try_recv();
-      let e_res = event_rec.try_recv();
+      let e_res = event_r.try_recv();
 
       let mut c = "nil".to_string();
       println!("checking events");
@@ -263,13 +263,17 @@ fn main() {
    //use std::sync::mpsc;
    use std::thread::Builder;
 
+
+   let (id_t, id_r) : (IdSender, IdReceiver) = channel();
+   for i in 0..100 { id_t.send(i); }
+
    let (cmd_t, cmd_r) : (CmdSender, CmdReceiver) = channel();
    let (event_t, event_r) : (EventSender, EventReceiver) = channel();
 
    let child = Builder::new().stack_size(8*32*1024*1024).spawn(move || {
       use lambda_oxide::main;
 
-      let env = setup_game_script_env(cmd_t, event_r);
+      let env = setup_game_script_env(cmd_t, event_r, id_r);
       main::interpreter(Some(env));
    }).unwrap();
 
@@ -280,7 +284,7 @@ fn main() {
          use GameCmd::*;
 
          match script_cmd {
-            Obj(shape_name, shape_type, color_or_texture) => {
+            Obj(shape_id, shape_type, color_or_texture) => {
                let mut model_builder = Model::new();
 
                let shape = match &*shape_type {
@@ -305,20 +309,20 @@ fn main() {
                let model = model_builder.finalize(&mut game.shader_manager, &game.display);
                let game_object = GameObject::new(GameObjectType::Model(model));
                game.root.items.push(game_object);
-
-               game.script_objs.insert(shape_name, game.root.items.len()-1);
             },
-            Move(shape_name, p) => {
-               let index = game.script_objs.get(&shape_name).unwrap();
-               game.root.items[*index].cam.translate(&p);
+            Move(shape_id, p) => {
+               //let index = game.script_objs.get(&shape_name).unwrap();
+               //game.root.items[*index].cam.translate(&p);
+               game.root.items[shape_id as usize].cam.translate(&p);
             },
-            Rotate(shape_name, degrees) => {
-               let index = game.script_objs.get(&shape_name).unwrap();
-               game.root.items[*index].cam.rotate(degrees);
+            Rotate(shape_id, degrees) => {
+               //let index = game.script_objs.get(&shape_name).unwrap();
+               //game.root.items[*index].cam.rotate(degrees);
+               game.root.items[shape_id as usize].cam.rotate(degrees);
             },
-            Scale(shape_name, p) => {
-               let index = game.script_objs.get(&shape_name).unwrap();
-               game.root.items[*index].cam.scale(&p);
+            Scale(shape_id, p) => {
+               //let index = game.script_objs.get(&shape_name).unwrap();
+               game.root.items[shape_id as usize].cam.scale(&p);
             }
             Exit => break,
             //_ => panic!("unsuported command")
