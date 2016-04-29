@@ -4,7 +4,15 @@
 
 (define triangle (lambda (name color) (shape name "triangle" color)))
 
-(define ball (triangle "my_triangle" red))
+(define ball (triangle "my_triangle" "data/ball.png"))
+(define p1 (shape "p1" "square" red))
+(define p2 (shape "p2" "square" blue))
+
+(resize ball 0.2 0.2)
+(define lst (cons p1 (cons p2 nil)))
+(map (lambda (x) (resize x 0.5 0.1)) lst)
+(move p1 0.0 1.0)
+(move p2 0.0 -1.0)
 
 (define x (lambda (n)
    (if (= n 0) "done"

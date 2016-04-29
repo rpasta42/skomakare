@@ -8,7 +8,7 @@ use std::rc::Rc;
 
 #[derive(Debug)]
 pub enum BuiltInShape {
-   Square, Triangle, Circle
+   Rectangle, Triangle, Circle
 }
 #[derive(Clone)]
 pub struct Shape {
@@ -21,10 +21,24 @@ impl Shape {
       match shape_type {
          BuiltInShape::Triangle => {
             shape.add_coords(-0.5, -0.5, 0.0, 0.0);
-            shape.add_coords(0.0, 0.5, 0.0, 1.0);
-            shape.add_coords(0.5, -0.25, 1.0, 0.0);
+            shape.add_coords(0.0, 0.5, 0.0, 0.0);
+            shape.add_coords(0.5, -0.5, 0.0, 0.0);
          },
-         _ => { panic!("not implemented {:?}", shape_type); }
+         BuiltInShape::Rectangle => {
+            shape.add_coords(-0.5, 0.5, 0.0, 0.0);
+            shape.add_coords(-0.5, -0.5, 0.0, 0.0);
+            shape.add_coords(0.5, -0.5, 0.0, 0.0);
+            shape.add_coords(0.5, -0.5, 0.0, 0.0);
+            shape.add_coords(0.5, 0.5, 0.0, 0.0);
+            shape.add_coords(-0.5, 0.5, 0.0, 0.0);
+         },
+         BuiltInShape::Circle => {
+            //so far, only have triangle strip, in lisp actually draw circle
+            shape.add_coords(0.0, 0.0, 0.0, 0.0);
+            shape.add_coords(-0.5, -0.5, 0.0, 0.0);
+            shape.add_coords(0.0, -0.5, 0.0, 0.0);
+         },
+         //_ => { panic!("not implemented {:?}", shape_type); }
       }
       shape
    }

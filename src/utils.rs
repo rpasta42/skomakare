@@ -61,6 +61,8 @@ fn img_path_to_image<'a>(img_path : &str) -> RawImage2d<'a, u8> {
    //let c = Cursor::new(&include_bytes!("../data/opengl.png")[..]);
 
    let image = image::load(c, image::PNG).unwrap().to_rgba();
+   //let image = image::load(c, image::JPEG).unwrap().to_rgba();
+
    let image_dimensions = image.dimensions();
    RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_dimensions)
 }

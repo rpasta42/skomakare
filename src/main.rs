@@ -232,23 +232,25 @@ fn setup_game_script_env(sender : CmdSender, event_rec : EventReceiver) -> RefCe
       //let e_res = event_rec.try_recv();
       let e_res = event_rec.try_recv();
 
-      let mut c = "nil";
+      let mut c = "nil".to_string();
       println!("checking events");
       if let Ok(events) = e_res {
          println!("got events {:?}", events);
          for e in events {
             if let Event::KeyboardInput(_, _, Some(key)) = e {
+               c = format!("{:?}", key).to_lowercase();
+               /*println!("{}", s);
                match key {
                   glium::glutin::VirtualKeyCode::W => c = "w",
                   glium::glutin::VirtualKeyCode::S => c = "s",
                   glium::glutin::VirtualKeyCode::A => c = "a",
                   glium::glutin::VirtualKeyCode::D => c = "d",
                   _ => {}
-               }
+               }*/
             }
          }
       }
-      Sexps::Str(c.to_string())
+      Sexps::Str(c)
    };
    env.borrow_mut().table_add_f("check_events", check_events);
 
@@ -261,19 +263,19 @@ fn main() {
    //use std::sync::mpsc;
    use std::thread::Builder;
 
-   let (tx, rx) : (CmdSender, CmdReceiver) = channel();
+   let (cmd_t, cmd_r) : (CmdSender, CmdReceiver) = channel();
    let (event_t, event_r) : (EventSender, EventReceiver) = channel();
 
    let child = Builder::new().stack_size(8*32*1024*1024).spawn(move || {
       use lambda_oxide::main;
 
-      let env = setup_game_script_env(tx, event_r);
+      let env = setup_game_script_env(cmd_t, event_r);
       main::interpreter(Some(env));
    }).unwrap();
 
    //engine_main();
    loop {
-      let script_cmd_res = rx.try_recv();
+      let script_cmd_res = cmd_r.try_recv();
       if let Ok(script_cmd) = script_cmd_res {
          use GameCmd::*;
 
@@ -283,6 +285,8 @@ fn main() {
 
                let shape = match &*shape_type {
                   "triangle" => Shape::new_builtin(BuiltInShape::Triangle),
+                  "circle" => Shape::new_builtin(BuiltInShape::Circle),
+                  "square" => Shape::new_builtin(BuiltInShape::Rectangle),
                   _ => panic!("unsuported shape")
                };
                model_builder.shape(shape);
