@@ -13,6 +13,7 @@ use types::*;
 use scene::*;
 use utils::*;
 use camera::Camera;
+use glium::glutin::Event;
 
 use glium::backend::glutin_backend::GlutinFacade;
 
@@ -32,7 +33,7 @@ struct Game {
    cam : Camera,
    clear_color : Color,
    //since we can't store game objects in lisp, we track everything by name
-   script_objs : HashMap<String, usize>
+   script_objs : HashMap<String, usize>,
 }
 
 impl Game {
@@ -47,12 +48,12 @@ impl Game {
          root : Scene::new(),
          shader_manager : ShaderManager::new(),
          clear_color : (0.0, 0.0, 0.0, 1.0), //white
-         script_objs : HashMap::new()
+         script_objs : HashMap::new(),
       };
       game.shader_manager.add_defaults(&game.display);
       game
    }
-   fn draw(&self) {
+   fn draw(&mut self) -> Vec<Event> {
       use glium::Surface;
       //self.root.draw();
       let init_m = self.cam.get_m();
@@ -106,117 +107,26 @@ impl Game {
          } else { panic!("unsupported object"); }
       }
       target.finish().unwrap();
-      use glium::glutin::Event;
+
+      let mut events = Vec::new();
       for ev in self.display.poll_events() {
          match ev {
             Event::Closed => panic!("exiting application"), //return,
-            _ => ()
+            e => {
+               //println!("{:?}", e);
+               if let Event::KeyboardInput(_, _, Some(key)) = e {
+                   events.push(e);
+               }
+            }
          }
       }
+      events
    }
-}
-
-fn draw(m : &Shape, img_path : String) {
-   use glium::{DisplayBuild, Surface};
-   let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
-
-   //let image = img_path_to_image(img_path);
-   //let texture = Texture2d::new(&display, image).unwrap();
-   let texture = img_path_to_texture(img_path, &display);
-
-   let vertex_buffer = glium::VertexBuffer::new(&display, &m.vertices).unwrap();
-   let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
-
-   use glium::Program;
-   let program = Program::from_source(&display, VERT_SH_TEXTURE, FRAG_SH_TEXTURE, None).unwrap();
-
-   let mut i = 0.0f32;
-   let mut t = -0.5;
-
-   loop {
-      i += 2.0*/*f32::consts::PI*/3.1415/1000.0;
-      t += 0.0002;
-      if t > 0.5 { t = -0.5; }
-
-      let mut target = display.draw();
-      target.clear_color(0.0, 0.0, 1.0, 1.0);
-
-      let uniforms = uniform! {
-         matrix: [
-            [i.cos(), 0.0,  i.sin(),  0.0],
-            [0.0,  1.0, 0.0,  0.0],
-            [-i.sin(),  0.0,  i.cos(), 0.0],
-            [0.0,  0.0,  0.0,  1.0f32]
-            /*[1.0, 0.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [ t , 0.0, 0.0, 1.0f32],*/
-         ],
-         tex: &texture
-      };
-
-      //target.draw(&vertex_buffer, &indices, &program, &glium::uniforms::EmptyUniforms, &Default::default()).unwrap();
-      //target.draw(&vertex_buffer, &indices, &program, &uniform! { matrix: matrix }, &Default::default()).unwrap();
-      target.draw(&vertex_buffer, &indices, &program, &uniforms, &Default::default()).unwrap();
-
-      target.finish().unwrap();
-
-      for ev in display.poll_events() {
-         match ev {
-            glium::glutin::Event::Closed => return,
-            _ => ()
-         }
-      }
-   }
-}
-
-#[allow(dead_code)]
-fn main_very_old() {
-   use glium::{DisplayBuild, Surface};
-   let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
-
-   let mut m = Shape::new();
-   m.add_coords(-0.5, -0.5, 0.0, 0.0);
-   m.add_coords(0.0, 0.5, 0.0, 1.0);
-   m.add_coords(0.5, -0.25, 1.0, 0.0);
-   draw(&m, "data/opengl.png".to_string());
-}
-
-fn engine_main() {
-   let mut game = Game::new();
-
-   let shape = Shape::new_builtin(BuiltInShape::Triangle);
-   let red = (1.0, 0.0, 0.0, 1.0);
-
-   let m = Model::new()
-            .shape(shape).color(red) //.img_path("data/opengl.png")
-            .finalize(&mut game.shader_manager, &game.display);
-
-   let triangle = GameObject::new(GameObjectType::Model(m));
-   game.root.items.push(triangle);
-
-   use std::time::Duration;
-   use std::time::SystemTime;
-   let mut start = SystemTime::now();
-   let one_tenth_sec = 100000000;
-   let mut moved = false;
-   let mut rotd = false;
-
-   loop {
-      let elapsed = start.elapsed().unwrap().as_secs();
-      if elapsed > 1 && !moved {
-         game.root.items[0].cam.translate(&[1.0, 0.0]);
-         moved = true;
-      }
-      //if elapsed > 2 && !rotd {game.root.items[0].cam.rotate(90.0); rotd = true;}
-      game.draw();
-   }
-   //draw(&m.shape.unwrap(), "data/opengl.png");
 }
 
 use std::sync::mpsc::{Sender, Receiver, channel};
-use lambda_oxide::types::Sexps;
-use lambda_oxide::main::{Env, arg_extract_str, eval};
+use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, print_compact_tree, arg_extract_str, arg_extract_float, Root};
+use lambda_oxide::main::{Env, eval, Callable};
 use std::cell::RefCell;
 
 type ObjName = String;
@@ -228,18 +138,11 @@ enum GameCmd {
 }
 type CmdSender = Sender<GameCmd>;
 type CmdReceiver = Receiver<GameCmd>;
-
-pub fn arg_extract_float(args : &Vec<Sexps>, index : usize) -> Option<f64> {
-   if let Sexps::Float(ref s) = args[index] {
-      Some(s.clone())
-   } else { None }
-}
+type EventSender = Sender<Vec<Event>>;
+type EventReceiver = Receiver<Vec<Event>>;
 
 #[allow(unused_variables)]
-fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
-   use lambda_oxide::main::{Callable, Root};
-   use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, print_compact_tree};
-
+fn setup_game_script_env(sender : CmdSender, event_rec : EventReceiver) -> RefCell<Env> {
    let env = lambda_oxide::main::setup_env();
 
    let sender_shape = sender.clone();
@@ -325,32 +228,29 @@ fn setup_game_script_env(sender : CmdSender) -> RefCell<Env> {
    };
    env.borrow_mut().table_add(0, "exit", Callable::BuiltIn(0, Box::new(halt_)));
 
-   let sleep = |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
-      if let Sexps::Err(ref s) = args_ { return err(s); }
+   let check_events = move |args : Sexps, root : Root, table : EnvId| -> Sexps {
+      //let e_res = event_rec.try_recv();
+      let e_res = event_rec.try_recv();
 
-      let args = arg_extractor(&args_).unwrap();
-      if args.len() != 1 { return err("sleep needs 1 argument"); }
-      let time = arg_extract_float(&args, 0).unwrap()*1000.0;
-
-      use std::thread::sleep_ms;
-      sleep_ms(time as u32);
-
-      Sexps::Str("success".to_string())
-   };
-   env.borrow_mut().table_add(0, "sleep", Callable::BuiltIn(0, Box::new(sleep)));
-
-   let do_ = |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
-      if let Sexps::Err(ref s) = args_ { return err(s); }
-
-      let args = arg_extractor(&args_).unwrap();
-
-      let mut result = err("empty do");
-      for arg in args {
-         result = eval(&arg, root, table);
+      let mut c = "nil";
+      println!("checking events");
+      if let Ok(events) = e_res {
+         println!("got events {:?}", events);
+         for e in events {
+            if let Event::KeyboardInput(_, _, Some(key)) = e {
+               match key {
+                  glium::glutin::VirtualKeyCode::W => c = "w",
+                  glium::glutin::VirtualKeyCode::S => c = "s",
+                  glium::glutin::VirtualKeyCode::A => c = "a",
+                  glium::glutin::VirtualKeyCode::D => c = "d",
+                  _ => {}
+               }
+            }
+         }
       }
-      result
+      Sexps::Str(c.to_string())
    };
-   env.borrow_mut().table_add(0, "do", Callable::BuiltIn(0, Box::new(do_)));
+   env.borrow_mut().table_add_f("check_events", check_events);
 
    env
 }
@@ -362,11 +262,12 @@ fn main() {
    use std::thread::Builder;
 
    let (tx, rx) : (CmdSender, CmdReceiver) = channel();
+   let (event_t, event_r) : (EventSender, EventReceiver) = channel();
 
    let child = Builder::new().stack_size(8*32*1024*1024).spawn(move || {
       use lambda_oxide::main;
 
-      let env = setup_game_script_env(tx);
+      let env = setup_game_script_env(tx, event_r);
       main::interpreter(Some(env));
    }).unwrap();
 
@@ -419,7 +320,10 @@ fn main() {
             //_ => panic!("unsuported command")
          }
       }
-      game.draw();
+      let events = game.draw();
+      if events.len() > 0 {
+         event_t.send(events);
+      }
    }
    child.join().unwrap();
 }

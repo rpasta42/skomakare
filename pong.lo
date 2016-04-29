@@ -2,16 +2,35 @@
 (define green "green")
 (define blue "blue")
 
-(define triangle (lambda name color) (shape name "triangle" color))
+(define triangle (lambda (name color) (shape name "triangle" color)))
 
 (define ball (triangle "my_triangle" red))
 
-(define run (lambda (n x y)
+(define x (lambda (n)
    (if (= n 0) "done"
+      (do
+         (sleep 0.001)
+         (define code (check_events))
+;         (print code)
+         (if (= code "w")
+            (move ball 0.0 0.01)
+            (if (= code "s")
+               (move ball 0.0 -0.01)
+               (if (= code "a")
+                  (move ball -0.01 0.0)
+                  (if (= code "d")
+                     (move ball 0.01 0.0)
+                     "blah"))))
+         (x (- n 1))))))
 
-(define game (lambda () (do
-   (define p1 (triangle "p1" green))
-   (define p2 (triangle "p2" red))
-   (define ball (triangle "ball" blue))
-   (define run (lambda (bpos bvec p1pos p2pos) (+ bpos bvec))))))
+(x 50000)
+
+;(define run (lambda (n x y)
+;   (if (= n 0) "done"
+
+;(define game (lambda () (do
+;   (define p1 (triangle "p1" green))
+;   (define p2 (triangle "p2" red))
+;   (define ball (triangle "ball" blue))
+;   (define run (lambda (bpos bvec p1pos p2pos) (+ bpos bvec))))))
 

@@ -21,7 +21,7 @@ pub fn s_to_f(s : &str) -> f32 {
    draw(&m);
 }*/
 
-
+#[allow(dead_code)]
 pub fn read_file(path_str : &str) -> Option<String> {
    use std::io::prelude::*;
    use std::fs::File;
@@ -35,18 +35,31 @@ pub fn read_file(path_str : &str) -> Option<String> {
          let mut file_content = String::new();
          match file.read_to_string(&mut file_content) {
             Ok(_) => Some(file_content.to_string()),
-            Err(why) => { panic!("{}", Error::description(&why)); None }
+            Err(why) => { panic!("{}", Error::description(&why)) }
          }
       }
-      Err(why) => { panic!("{}", Error::description(&why)); None }
+      Err(why) => { panic!("{}", Error::description(&why)) }
    }
 }
 
-pub fn read_bin_file(path_str : &str) {}
+#[allow(dead_code)]
+pub fn read_bin_file(path_str : &str) -> [u8; 12] {
+   use std::fs::File;
+   use std::io::Read;
+
+   let mut file = File::open(path_str).unwrap();
+   let mut buf = [0u8; 12];
+   file.read(&mut buf).unwrap();
+   return buf;
+}
+
+//&include_bytes!("path")[..]
 
 fn img_path_to_image<'a>(img_path : &str) -> RawImage2d<'a, u8> {
-   //TODO: remove hardcoded
-   let c = Cursor::new(&include_bytes!("../data/opengl.png")[..]);
+   use std::fs::File;
+   let mut c = File::open(img_path).unwrap();
+   //let c = Cursor::new(&include_bytes!("../data/opengl.png")[..]);
+
    let image = image::load(c, image::PNG).unwrap().to_rgba();
    let image_dimensions = image.dimensions();
    RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_dimensions)
