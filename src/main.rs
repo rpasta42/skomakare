@@ -63,9 +63,9 @@ impl Game {
 
       for game_obj in &self.root.items {
          let obj_m = game_obj.cam.get_m();
-         //let final_m = mul_matrices(&init_m, &obj_m);
-         //let final_m = obj_m;
          let final_m = mul_matrices(&obj_m, &init_m);
+         //let final_m = game_obj.cam.get_rot_m();
+
 
          if let GameObjectType::Model(ref m) = game_obj.data {
             let shape = m.shape.clone().unwrap();

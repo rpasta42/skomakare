@@ -20,9 +20,12 @@ impl Shape {
       let mut shape = Shape::new(); //TODO
       match shape_type {
          BuiltInShape::Triangle => {
-            shape.add_coords(-0.5, -0.5, 0.0, 0.0);
+            /*shape.add_coords(-0.5, -0.5, 0.0, 0.0);
             shape.add_coords(0.0, 0.5, 0.0, 1.0);
-            shape.add_coords(0.5, -0.5, 1.0, 0.0);
+            shape.add_coords(0.5, -0.5, 1.0, 0.0);*/
+            shape.add_coords(-0.5, -0.4330127, 0.0, 0.0);
+            shape.add_coords(0.0, 0.4330127, 0.0, 1.0);
+            shape.add_coords(0.5, -0.4330127, 1.0, 0.0);
          },
          BuiltInShape::Rectangle => {
             shape.add_coords(0.5, -0.5, 1.0, 0.0);
