@@ -1,0 +1,10 @@
+(define red "red")
+(define green "green")
+(define blue "blue")
+
+(define triangle "triangle")
+(define square "square")
+(define circle "circle")
+
+(define t (lambda (name color) (shape name triangle color)))
+(define c (lambda (name color) (shape name circle color)))

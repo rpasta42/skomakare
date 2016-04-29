@@ -4,21 +4,33 @@ use types::*;
 use glium::texture::{Texture2d, RawImage2d};
 use std::io::Cursor;
 
+#[allow(dead_code)]
 pub fn char_at(s : &str, n : usize) -> Option<char> {
    for (i, c) in s.chars().enumerate() {
       if i == n { return Some(c) }
    } return None
 }
 
+/*
+#[allow(dead_code)]
 pub fn s_to_f(s : &str) -> f32 {
    s.parse::<f32>().unwrap()
 }
 
-/*fn display_file(path : &str) {
+fn display_file(path : &str) {
    let data = read_file(path).unwrap();
    let m = parse_obj(&data);
    m.print();
    draw(&m);
+}
+pub fn read_bin_file(path_str : &str) -> [u8; 12] {
+   use std::fs::File;
+   use std::io::Read;
+
+   let mut file = File::open(path_str).unwrap();
+   let mut buf = [0u8; 12];
+   file.read(&mut buf).unwrap();
+   return buf;
 }*/
 
 #[allow(dead_code)]
@@ -42,19 +54,8 @@ pub fn read_file(path_str : &str) -> Option<String> {
    }
 }
 
-#[allow(dead_code)]
-pub fn read_bin_file(path_str : &str) -> [u8; 12] {
-   use std::fs::File;
-   use std::io::Read;
-
-   let mut file = File::open(path_str).unwrap();
-   let mut buf = [0u8; 12];
-   file.read(&mut buf).unwrap();
-   return buf;
-}
 
 //&include_bytes!("path")[..]
-
 fn img_path_to_image<'a>(img_path : &str) -> RawImage2d<'a, u8> {
    use std::fs::File;
    let mut c = File::open(img_path).unwrap();
@@ -71,5 +72,4 @@ pub fn img_path_to_texture(img_path : String, display : &Display) -> Texture2d {
    let image = img_path_to_image(&*img_path);
    Texture2d::new(display, image).unwrap()
 }
-
 

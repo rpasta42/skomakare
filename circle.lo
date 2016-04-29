@@ -1,9 +1,3 @@
-(define red "red")
-(define green "green")
-(define blue "blue")
-
-(define triangle (lambda (name color) (shape name "circle" color)))
-
 (define s1 (triangle "s1" red))
 (rotate s1 1.6)
 

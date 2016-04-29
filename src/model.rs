@@ -21,16 +21,16 @@ impl Shape {
       match shape_type {
          BuiltInShape::Triangle => {
             shape.add_coords(-0.5, -0.5, 0.0, 0.0);
-            shape.add_coords(0.0, 0.5, 0.0, 0.0);
-            shape.add_coords(0.5, -0.5, 0.0, 0.0);
+            shape.add_coords(0.0, 0.5, 0.0, 1.0);
+            shape.add_coords(0.5, -0.5, 1.0, 0.0);
          },
          BuiltInShape::Rectangle => {
-            shape.add_coords(-0.5, 0.5, 0.0, 0.0);
+            shape.add_coords(0.5, -0.5, 1.0, 0.0);
             shape.add_coords(-0.5, -0.5, 0.0, 0.0);
-            shape.add_coords(0.5, -0.5, 0.0, 0.0);
-            shape.add_coords(0.5, -0.5, 0.0, 0.0);
-            shape.add_coords(0.5, 0.5, 0.0, 0.0);
-            shape.add_coords(-0.5, 0.5, 0.0, 0.0);
+            shape.add_coords(-0.5, 0.5, 0.0, 1.0);
+            shape.add_coords(0.5, -0.5, 1.0, 0.0);
+            shape.add_coords(0.5, 0.5, 1.0, 1.0);
+            shape.add_coords(-0.5, 0.5, 0.0, 1.0);
          },
          BuiltInShape::Circle => {
             //so far, only have triangle strip, in lisp actually draw circle
