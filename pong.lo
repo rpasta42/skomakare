@@ -1,8 +1,8 @@
 (load "graphics.lo")
 
-(define ball (t "my_triangle" "data/ball.png"))
-(define p1 (shape "p1" square red))
-(define p2 (shape "p2" square blue))
+(define ball (t "data/ball.png"))
+(define p1 (shape square red))
+(define p2 (shape square blue))
 
 (resize ball 0.2 0.2)
 (define lst (cons p1 (cons p2 nil)))

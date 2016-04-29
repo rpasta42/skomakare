@@ -1,8 +1,9 @@
-(shape "s" "triangle" "red")
+(define s (shape "triangle" "red"))
+
 (define x (lambda (n)
    (if (= n 0)
       "done"
-      (do (rotate "s" 0.01)
+      (do (rotate s 0.01)
           (sleep 0.01)
           (x (- n 1))))))
 (x 5000)
