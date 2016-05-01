@@ -1,10 +1,10 @@
 [package]
 name = "skomakare"
-version = "0.1.0"
+version = "0.0.2"
 authors = ["Kostyantyn Kovalskyy <kostelkow@gmail.com>"]
 
 [dependencies]
 glium = "*"
 image = "*"
-LambdaOxide = { git = "https://github.com/KostyaKow/LambdaOxide.git", version = "0.0.12" }
+LambdaOxide = { git = "https://github.com/KostyaKow/LambdaOxide.git", version = "0.1.0" }
 
