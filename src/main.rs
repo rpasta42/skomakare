@@ -10,7 +10,7 @@ use glium::backend::glutin_backend::GlutinFacade;
 use glium::glutin::Event;
 
 use std::sync::mpsc::{Sender, Receiver, channel};
-use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, print_compact_tree, arg_extract_str, arg_extract_float, Root};
+use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, print_compact_tree, arg_extract_str, arg_extract_num, Root};
 use lambda_oxide::main::{Env, eval, Callable};
 use std::cell::RefCell;
 
@@ -29,7 +29,6 @@ mod camera;
 mod utils;
 
 implement_vertex!(ColorVertex, pos, tex_pos);
-
 
 type ObjId = i64;
 //Obj(name, <triangle|square|circle>, <color|pic_path>)
@@ -76,9 +75,9 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 3 { return err(&*format!("move needs 3 arguments but {} were given", args.len())); }
 
-      let shape_id = arg_extract_float(&args, 0).unwrap() as i64;
-      let x = arg_extract_float(&args, 1).unwrap(); //TODO: check types
-      let y = arg_extract_float(&args, 2).unwrap(); //and notify user if wrong
+      let shape_id = arg_extract_num(&args, 0).unwrap() as i64;
+      let x = arg_extract_num(&args, 1).unwrap(); //TODO: check types
+      let y = arg_extract_num(&args, 2).unwrap(); //and notify user if wrong
 
       let cmd = GameCmd::Move(shape_id, [x as f32, y as f32]);
       sender_move.send(cmd.clone()).unwrap();
@@ -95,11 +94,11 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 2 { return err("rotate needs 2 arguments"); }
 
-      let shape_id = arg_extract_float(&args, 0).unwrap() as i64; //TODO: check types
-      let degrees = arg_extract_float(&args, 1).unwrap();  //and notify user if wrong
+      let shape_id = arg_extract_num(&args, 0).unwrap() as i64; //TODO: check types
+      let degrees = arg_extract_num(&args, 1).unwrap();  //and notify user if wrong
 
       let cmd = GameCmd::Rotate(shape_id, degrees as Coord);
-      sender_rotate.send(cmd.clone());
+      sender_rotate.send(cmd.clone()).unwrap();
 
       Sexps::Str("success".to_string())
    };
@@ -113,9 +112,9 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 3 { return err("resize needs 3 arguments"); }
 
-      let shape_id = arg_extract_float(&args, 0).unwrap() as i64; //TODO: check types
-      let x = arg_extract_float(&args, 1).unwrap(); //and notify user if wrong
-      let y = arg_extract_float(&args, 2).unwrap();
+      let shape_id = arg_extract_num(&args, 0).unwrap() as i64; //TODO: check types
+      let x = arg_extract_num(&args, 1).unwrap(); //and notify user if wrong
+      let y = arg_extract_num(&args, 2).unwrap();
 
       let cmd = GameCmd::Scale(shape_id, [x as Coord, y as Coord]);
       sender_scale.send(cmd.clone()).unwrap();
