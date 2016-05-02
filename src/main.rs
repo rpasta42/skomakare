@@ -33,7 +33,7 @@ type ObjId = i64;
 enum GameCmd {
    Obj(ObjId, String, String),
    Move(ObjId, Point), Rotate(ObjId, Coord), Scale(ObjId, Point),
-
+   SetPos(ObjId, Point), SetRotation(ObjId, Coord), SetSize(ObjId, Point),
    Exit
 }
 type CmdSender = Sender<GameCmd>;
@@ -85,19 +85,17 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
    //object_name, x, y
    let set_pos = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
       let args = arg_extractor(&args_).unwrap();
-      if args.len() != 3 { return err(&*format!("move needs 3 arguments but {} were given", args.len())); }
+      if args.len() != 3 { return err(&*format!("pos needs 3 arguments but {} were given", args.len())); }
 
       let shape_id = arg_extract_num(&args, 0).unwrap() as i64;
       let x = arg_extract_num(&args, 1).unwrap(); //TODO: check types
       let y = arg_extract_num(&args, 2).unwrap(); //and notify user if wrong
 
-      let cmd = GameCmd::Move(shape_id, [x as f32, y as f32]);
+      let cmd = GameCmd::SetPos(shape_id, [x as f32, y as f32]);
       sender_set_pos.send(cmd.clone()).unwrap();
-
       Sexps::Str("success".to_string())
    };
    env.borrow_mut().table_add_f("pos", set_pos);
-
 
    let sender_rotate = sender.clone();
    //object_name, degrees
@@ -183,9 +181,7 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
 fn main() {
    let mut game = Game::new();
 
-   //use std::sync::mpsc;
    use std::thread::Builder;
-
 
    let (id_t, id_r) : (IdSender, IdReceiver) = channel();
    for i in 0..100 { id_t.send(i).unwrap(); }
@@ -234,19 +230,23 @@ fn main() {
                game.root.items.push(game_object);
             },
             Move(shape_id, p) => {
-               //let index = game.script_objs.get(&shape_name).unwrap();
-               //game.root.items[*index].cam.translate(&p);
                game.root.items[shape_id as usize].cam.translate(&p);
             },
-            Rotate(shape_id, degrees) => {
-               //let index = game.script_objs.get(&shape_name).unwrap();
-               //game.root.items[*index].cam.rotate(degrees);
-               game.root.items[shape_id as usize].cam.rotate(degrees);
+            Rotate(shape_id, rad) => {
+               game.root.items[shape_id as usize].cam.rotate(rad);
             },
             Scale(shape_id, p) => {
-               //let index = game.script_objs.get(&shape_name).unwrap();
                game.root.items[shape_id as usize].cam.scale(&p);
-            }
+            },
+            SetPos(shape_id, p) => {
+               game.root.items[shape_id as usize].cam.set_position(&p);
+            },
+            SetRotation(shape_id, rad) => {
+               game.root.items[shape_id as usize].cam.set_rotation(rad);
+            },
+            SetSize(shape_id, p) => {
+               game.root.items[shape_id as usize].cam.set_size(&p);
+            },
             Exit => return,
             //_ => panic!("unsuported command")
          }

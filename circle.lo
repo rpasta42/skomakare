@@ -4,8 +4,8 @@
       (if (= n 32) triangles
          (do (define shape (c color))
              (define new_rot (+ rot (/ pi 4 2 2)))
-             ;(print (+ "rotating " n  " times. deg: "
-             ;          (- 0 new_rot) " shape: " shape))
+;            (print (+ "rotating " n  " times. deg: "
+;                (- 0 new_rot) " shape: " shape))
              (rotate shape (- 0 new_rot))
              (circle-helper (+ n 1) new_rot (cons shape triangles))))))
    (circle-helper 0 0 nil))))
