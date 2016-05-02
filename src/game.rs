@@ -5,12 +5,16 @@ use camera::Camera;
 use model::*;
 use glium::glutin::Event;
 
+pub type MousePos = (u16, u16);
+pub type GameEvents = (Vec<Event>, Vec<MousePos>);
+
 pub struct Game {
    pub display : Display,
    pub root : Scene,
    pub shader_manager : ShaderManager,
    pub cam : Camera,
    pub clear_color : Color,
+   pub mouse_pos : MousePos
 }
 
 impl Game {
@@ -25,11 +29,12 @@ impl Game {
          root : Scene::new(),
          shader_manager : ShaderManager::new(),
          clear_color : (0.0, 0.0, 0.0, 1.0), //white
+         mouse_pos : (0, 0)
       };
       game.shader_manager.add_defaults(&game.display);
       game
    }
-   pub fn draw(&mut self) -> Vec<Event> {
+   pub fn draw(&mut self) -> GameEvents {
       use glium::Surface;
       //self.root.draw();
       let init_m = self.cam.get_m();
@@ -84,19 +89,26 @@ impl Game {
       }
       target.finish().unwrap();
 
-      let mut events = Vec::new();
+      let mut key_events = Vec::new();
+      let mut click_events = Vec::new();
       for ev in self.display.poll_events() {
          match ev {
             Event::Closed => panic!("exiting application"), //return,
             e => {
                //println!("{:?}", e);
-               if let Event::KeyboardInput(_, _, Some(key)) = e {
-                   events.push(e);
+               use glium::glutin::ElementState::Released;
+               use glium::glutin::MouseButton::Left;
+
+               match e {
+                  Event::MouseMoved(x, y) => self.mouse_pos = (x as u16, y as u16),
+                  Event::KeyboardInput(_, _, Some(key)) => key_events.push(e),
+                  Event::MouseInput(Released, Left) => click_events.push(self.mouse_pos),
+                  _ => {}
                }
             }
          }
       }
-      events
+      (key_events, click_events)
    }
 }
 

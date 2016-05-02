@@ -38,8 +38,13 @@ enum GameCmd {
 }
 type CmdSender = Sender<GameCmd>;
 type CmdReceiver = Receiver<GameCmd>;
-type EventSender = Sender<Vec<Event>>;
-type EventReceiver = Receiver<Vec<Event>>;
+
+//type EventSender = Sender<Vec<Event>>;
+//type EventReceiver = Receiver<Vec<Event>>;
+use game::GameEvents;
+
+type EventSender = Sender<GameEvents>;
+type EventReceiver = Receiver<GameEvents>;
 
 type IdSender = Sender<ObjId>;
 type IdReceiver = Receiver<ObjId>;
@@ -100,8 +105,6 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
    let sender_rotate = sender.clone();
    //object_name, degrees
    let rotate = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
-      if let Sexps::Err(ref s) = args_ { return err(s); }
-
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 2 { return err("rotate needs 2 arguments"); }
 
@@ -118,8 +121,6 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
    let sender_scale = sender.clone();
    //object_name, degrees
    let resize = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
-      if let Sexps::Err(ref s) = args_ { return err(s); }
-
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 3 { return err("resize needs 3 arguments"); }
 
@@ -136,9 +137,6 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
 
    let sender_halt = sender.clone();
    let halt_ = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
-      if let Sexps::Err(ref s) = args_ { return err(s); }
-
-      let cmd = GameCmd::Exit;
       sender_halt.send(GameCmd::Exit).unwrap();
       //kkerr sender.send(cmd).unwrap();
       err("halting")
@@ -146,16 +144,19 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
    env.borrow_mut().table_add_f("exit", halt_);
 
    let check_events = move |args : Sexps, root : Root, table : EnvId| -> Sexps {
+      use lambda_oxide::main::run;
       //let e_res = event_rec.try_recv();
-      let e_res = event_r.try_recv();
+      let events = event_r.try_recv();
 
       let mut c = "nil".to_string();
-      println!("checking events");
-      if let Ok(events) = e_res {
-         println!("got events {:?}", events);
-         for e in events {
+      //println!("checking events");
+      if let Ok((key_events, mouse_events)) = events {
+         println!("got events {:?}", key_events);
+
+         for e in key_events {
             if let Event::KeyboardInput(_, _, Some(key)) = e {
-               c = format!("{:?}", key).to_lowercase();
+               let key_event_str = format!("(cons \"key\" \"{:?}\")", key).to_lowercase();
+               return run(root, &*key_event_str).unwrap();
                /*println!("{}", s);
                match key {
                   glium::glutin::VirtualKeyCode::W => c = "w",
@@ -166,8 +167,13 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
                }*/
             }
          }
+         for (x, y) in mouse_events {
+            let mouse_event_str = format!("(cons \"mouse\" (cons {} {}))", x, y);
+            return run(root, &*mouse_event_str).unwrap();
+         }
       }
-      Sexps::Str(c)
+      run(root, "nil").unwrap()
+      //Sexps::Var("nil".to_string())
    };
    env.borrow_mut().table_add_f("check_events", check_events);
 
@@ -251,8 +257,9 @@ fn main() {
             //_ => panic!("unsuported command")
          }
       }
+      //let (key_events, mouse_events) = game.draw();
       let events = game.draw();
-      if events.len() > 0 {
+      if events.0.len() > 0 || events.1.len() > 0 {
          event_t.send(events).unwrap();
       }
    }

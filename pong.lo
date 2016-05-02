@@ -12,12 +12,18 @@
    (if (= n 0) "done"
       (do
          (sleep 0.001)
-         (define code (check_events))
-;        (print code)
-         (if (= code "w") (move ball 0.0 0.05) nil)
-         (if (= code "s") (move ball 0.0 -0.05) nil)
-         (if (= code "a") (move ball -0.05 0.0) nil)
-         (if (= code "d") (move ball 0.05 0.0) nil)
+         (define events (check_events))
+         (if (null? events)
+            ""
+            (if (= (car events) "key")
+               (do
+                  (define code (cdr events))
+                  (print code)
+                  (if (= code "w") (move ball 0.0 0.05) nil)
+                  (if (= code "s") (move ball 0.0 -0.05) nil)
+                  (if (= code "a") (move ball -0.05 0.0) nil)
+                  (if (= code "d") (move ball 0.05 0.0) nil))
+               ""))
          (x (- n 1))))))
 
 (x 50000)

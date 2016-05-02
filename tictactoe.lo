@@ -1,0 +1,42 @@
+(define repeat (lambda (n lst) (if (= n 1) lst (append lst (repeat (- n 1) lst)))))
+(define loop (lambda (n f) (if (= n 0) nil (cons (f) (loop (- n 1) f)))))
+
+(define draw-board (lambda (init_color) (do
+   (define squares (loop 9 (lambda () (s init_color))))
+   (map (lambda (x) (do (resize x 0.29 0.29) (move x -0.5 0.3))) squares)
+   (define fold_f (lambda (square n) (do
+      (print (+ "current n:" n " square: " square))
+      (define x (if (> n 6)
+                  (- n 6)
+                  (if (> n 3) (- n 3) n)))
+      (define y (if (> n 6)
+                  2
+                  (if (> n 3) 1 0)))
+      (move square (* 0.3 x) (- 0 (* 0.3 y)))
+      (+ n 1))))
+   (print "calling fold with: ")
+   (fold fold_f 1 squares)
+
+   squares)))
+
+(define board (draw-board red))
+
+(define check-mouse (lambda () (do
+   (define events (check_events))
+   (if (null? events)
+      nil
+      (if (= (car events) "mouse")
+         (cdr events)
+         nil)))))
+
+(define play (lambda (n)
+   (if (= n 0) "done"
+      (do
+         (sleep 0.1)
+         (define clicks (check-mouse))
+         (if (null? clicks)
+            (print "no clicks")
+            (print (+ "x: " (car clicks) " y: " (cdr clicks))))
+         (play (- n 1))))))
+
+(play 100)

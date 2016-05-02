@@ -23,15 +23,4 @@
 (define triangles (cons 1 nil))
 (print (length triangles))
 
-;(define s1 (triangle "s1" red))
-;(rotate s1 1.6)
-
-;(define s2 (triangle "s2" red))
-;(rotate s2 3.14)
-
-;(define s3 (triangle "s3" red))
-;(rotate s3 4.7)
-
-;(define s4 (triangle "s4" red))
-;(rotate s4 6.1)
-
+(exit)
