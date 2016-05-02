@@ -1,4 +1,7 @@
-https://gist.github.com/KostyaKow/04c01527e043077771653f942b298567
+Here's an example to draw circle:
+https://github.com/KostyaKow/skomakare/blob/master/circle.lo
+And this is example I started for tictactoe:
+https://github.com/KostyaKow/skomakare/blob/master/tictactoe.lo
 
 - TODO:
    - [ ] write README.md
@@ -7,3 +10,6 @@ https://gist.github.com/KostyaKow/04c01527e043077771653f942b298567
    - [ ] Add pos, rot, scale
    - [ ] add change_color for existing objects
    - [ ] change clear color
+
+
+https://gist.github.com/KostyaKow/04c01527e043077771653f942b298567
