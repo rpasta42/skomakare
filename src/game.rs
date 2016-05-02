@@ -4,11 +4,13 @@ use scene::*;
 use camera::Camera;
 use model::*;
 use glium::glutin::Event;
+use glium::glutin::Window;
 
-pub type MousePos = (u16, u16);
+pub type MousePos = (f32, f32);
 pub type GameEvents = (Vec<Event>, Vec<MousePos>);
 
 pub struct Game {
+   //pub window : Window,
    pub display : Display,
    pub root : Scene,
    pub shader_manager : ShaderManager,
@@ -22,14 +24,15 @@ impl Game {
       use glium::{DisplayBuild, Surface};
       use glium::glutin::WindowBuilder;
 
-      let display_ = WindowBuilder::new().build_glium().unwrap();
+      let win_b = WindowBuilder::new();
       let mut game = Game {
-         display : display_,
+         //window : win_b.build().unwrap(),
+         display : win_b.build_glium().unwrap(),
          cam : Camera::new(),
          root : Scene::new(),
          shader_manager : ShaderManager::new(),
          clear_color : (0.0, 0.0, 0.0, 1.0), //white
-         mouse_pos : (0, 0)
+         mouse_pos : (0.0, 0.0)
       };
       game.shader_manager.add_defaults(&game.display);
       game
@@ -91,7 +94,9 @@ impl Game {
 
       let mut key_events = Vec::new();
       let mut click_events = Vec::new();
-      for ev in self.display.poll_events() {
+
+      let polled_events = self.display.poll_events();
+      for ev in polled_events {
          match ev {
             Event::Closed => panic!("exiting application"), //return,
             e => {
@@ -100,7 +105,13 @@ impl Game {
                use glium::glutin::MouseButton::Left;
 
                match e {
-                  Event::MouseMoved(x, y) => self.mouse_pos = (x as u16, y as u16),
+                  Event::MouseMoved(x, y) => {
+                     //let (w_w, w_h) = self.window.get_inner_size_pixels().unwrap();
+                     //self.mouse_pos.0 = (x as f32) / (w_w as f32);
+                     //self.mouse_pos.1 = (y as f32) / (w_h as f32);
+                     self.mouse_pos.0 = x as f32 / 657.0;
+                     self.mouse_pos.1 = y as f32 / 533.0;
+                  },
                   Event::KeyboardInput(_, _, Some(key)) => key_events.push(e),
                   Event::MouseInput(Released, Left) => click_events.push(self.mouse_pos),
                   _ => {}
