@@ -1,5 +1,5 @@
-//$ cargo run
-//**> (l "circle.lo")
+;$ cargo run
+;**> (l "circle.lo")
 
 (define circle (lambda (color) (do
    (define circle-helper (lambda (n rot triangles)

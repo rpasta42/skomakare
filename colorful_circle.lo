@@ -23,4 +23,5 @@
 (define triangles (cons 1 nil))
 (print (length triangles))
 
+(sleep 2)
 (exit)
