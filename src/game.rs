@@ -18,16 +18,23 @@ pub struct Game {
    pub clear_color : Color,
    pub mouse_pos : MousePos
 }
-
+/*
+00:39 mib_snrhte  good morning
+00:41 mib_snrhte  so to build glium, I do it like this: WindowBuilder::new().build_glium(). And to get the window I do this: WindowBuilder::new.build(). Up until this point, i didn't need to build window, but I want to use function get_inner_size_pixels()
+00:42 mib_snrhte  to me, it seems like i can use Window Builder in one of the 2 ways, but not both. What should I do?
+*/
 impl Game {
    pub fn new() -> Game {
       use glium::{DisplayBuild, Surface};
       use glium::glutin::WindowBuilder;
 
       let win_b = WindowBuilder::new();
+      let display = win_b.build_glium();
+      //let window = &win_b.build().unwrap();
+
       let mut game = Game {
          //window : win_b.build().unwrap(),
-         display : win_b.build_glium().unwrap(),
+         display : display.unwrap(),
          cam : Camera::new(),
          root : Scene::new(),
          shader_manager : ShaderManager::new(),
