@@ -5,17 +5,14 @@ extern crate image;
 extern crate lambda_oxide;
 extern crate libc;
 
-use std::collections::HashMap;
-use glium::backend::glutin_backend::GlutinFacade;
 use glium::glutin::Event;
 
 use std::sync::mpsc::{Sender, Receiver, channel};
-use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, print_compact_tree, arg_extract_str, arg_extract_num, Root};
-use lambda_oxide::main::{Env, eval, Callable};
+use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, arg_extract_str, arg_extract_num, Root};
+use lambda_oxide::main::{Env, Callable};
 use std::cell::RefCell;
 
 use types::*;
-use utils::*;
 use scene::*;
 use model::*;
 use game::Game;
@@ -34,8 +31,10 @@ type ObjId = i64;
 //Obj(name, <triangle|square|circle>, <color|pic_path>)
 #[derive(Clone)]
 enum GameCmd {
-   Obj(ObjId, String, String), Move(ObjId, Point),
-   Rotate(ObjId, Coord), Scale(ObjId, Point), Exit
+   Obj(ObjId, String, String),
+   Move(ObjId, Point), Rotate(ObjId, Coord), Scale(ObjId, Point),
+
+   Exit
 }
 type CmdSender = Sender<GameCmd>;
 type CmdReceiver = Receiver<GameCmd>;
@@ -51,8 +50,6 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
 
    let sender_shape = sender.clone();
    let shape_ = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
-      if let Sexps::Err(ref s) = args_ { return err(s); }
-
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 2 { return err("shape needs 2 arguments"); }
 
@@ -65,13 +62,11 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
 
       Sexps::Int(id)
    };
-   env.borrow_mut().table_add(0, "shape", Callable::BuiltIn(0, Box::new(shape_)));
+   env.borrow_mut().table_add_f("shape", shape_);
 
    let sender_move = sender.clone();
    //object_name, x, y
    let move_ = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
-      if let Sexps::Err(ref s) = args_ { return err(s); }
-
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 3 { return err(&*format!("move needs 3 arguments but {} were given", args.len())); }
 
@@ -84,7 +79,25 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
 
       Sexps::Str("success".to_string())
    };
-   env.borrow_mut().table_add(0, "move", Callable::BuiltIn(0, Box::new(move_)));
+   env.borrow_mut().table_add_f("move", move_);
+
+   let sender_set_pos = sender.clone();
+   //object_name, x, y
+   let set_pos = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
+      let args = arg_extractor(&args_).unwrap();
+      if args.len() != 3 { return err(&*format!("move needs 3 arguments but {} were given", args.len())); }
+
+      let shape_id = arg_extract_num(&args, 0).unwrap() as i64;
+      let x = arg_extract_num(&args, 1).unwrap(); //TODO: check types
+      let y = arg_extract_num(&args, 2).unwrap(); //and notify user if wrong
+
+      let cmd = GameCmd::Move(shape_id, [x as f32, y as f32]);
+      sender_set_pos.send(cmd.clone()).unwrap();
+
+      Sexps::Str("success".to_string())
+   };
+   env.borrow_mut().table_add_f("pos", set_pos);
+
 
    let sender_rotate = sender.clone();
    //object_name, degrees
@@ -102,7 +115,7 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
 
       Sexps::Str("success".to_string())
    };
-   env.borrow_mut().table_add(0, "rotate", Callable::BuiltIn(0, Box::new(rotate)));
+   env.borrow_mut().table_add_f("rotate", rotate);
 
    let sender_scale = sender.clone();
    //object_name, degrees
@@ -121,16 +134,18 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
 
       Sexps::Str("success".to_string())
    };
-   env.borrow_mut().table_add(0, "resize", Callable::BuiltIn(0, Box::new(resize)));
+   env.borrow_mut().table_add_f("resize", resize);
 
+   let sender_halt = sender.clone();
    let halt_ = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
       if let Sexps::Err(ref s) = args_ { return err(s); }
 
       let cmd = GameCmd::Exit;
+      sender_halt.send(GameCmd::Exit).unwrap();
       //kkerr sender.send(cmd).unwrap();
       err("halting")
    };
-   env.borrow_mut().table_add(0, "exit", Callable::BuiltIn(0, Box::new(halt_)));
+   env.borrow_mut().table_add_f("exit", halt_);
 
    let check_events = move |args : Sexps, root : Root, table : EnvId| -> Sexps {
       //let e_res = event_rec.try_recv();
@@ -158,6 +173,10 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver, id_r : IdR
    };
    env.borrow_mut().table_add_f("check_events", check_events);
 
+   use std::str::from_utf8;
+   use lambda_oxide::add_lisp_to_binary;
+   let graphics_code = from_utf8(&include_bytes!("../graphics.lo")[..]).unwrap().to_string();
+   add_lisp_to_binary(&graphics_code, &env);
    env
 }
 
@@ -169,7 +188,7 @@ fn main() {
 
 
    let (id_t, id_r) : (IdSender, IdReceiver) = channel();
-   for i in 0..100 { id_t.send(i); }
+   for i in 0..100 { id_t.send(i).unwrap(); }
 
    let (cmd_t, cmd_r) : (CmdSender, CmdReceiver) = channel();
    let (event_t, event_r) : (EventSender, EventReceiver) = channel();
@@ -188,7 +207,7 @@ fn main() {
          use GameCmd::*;
 
          match script_cmd {
-            Obj(shape_id, shape_type, color_or_texture) => {
+            Obj(_, shape_type, color_or_texture) => {
                let mut model_builder = Model::new();
 
                let shape = match &*shape_type {
@@ -228,13 +247,13 @@ fn main() {
                //let index = game.script_objs.get(&shape_name).unwrap();
                game.root.items[shape_id as usize].cam.scale(&p);
             }
-            Exit => break,
+            Exit => return,
             //_ => panic!("unsuported command")
          }
       }
       let events = game.draw();
       if events.len() > 0 {
-         event_t.send(events);
+         event_t.send(events).unwrap();
       }
    }
    child.join().unwrap();

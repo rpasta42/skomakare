@@ -37,9 +37,22 @@ impl Shape {
          },
          BuiltInShape::Circle => {
             //so far, only have triangle strip, in lisp actually draw circle
+            /* for rot = pi/4, n = 8
+            let x = 0.35355339;
             shape.add_coords(0.0, 0.0, 0.0, 0.0);
-            shape.add_coords(-0.5, -0.5, 0.0, 0.0);
+            shape.add_coords(-x, -x, 0.0, 0.0);
+            shape.add_coords(0.0, -0.5, 0.0, 0.0);*/
+            let x = 0.121267813;
+            let y = 0.515388203;
+            let z = 0.48507;
+            //rot = pi/4/2/2, n = 8*2*2
+            shape.add_coords(0.0, 0.0, 0.0, 0.0);
+            shape.add_coords(-x, -z, 0.0, 0.0);
             shape.add_coords(0.0, -0.5, 0.0, 0.0);
+
+            /*shape.add_coords(0.0, 0.0, 0.0, 0.0);
+            shape.add_coords(-0.5, -0.5, 0.0, 0.0);
+            shape.add_coords(0.0, -0.5, 0.0, 0.0);*/
          },
          //_ => { panic!("not implemented {:?}", shape_type); }
       }

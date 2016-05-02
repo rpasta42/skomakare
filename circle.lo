@@ -1,23 +1,21 @@
-(load "graphics.lo")
 
-(define f (lambda (n rot)
-   (if (= n 0) "done"
-      (do (define shape (c red))
-          (define new_rot (+ rot 0.1))
-          (rotate shape new_rot)
-          (f (- n 1) new_rot)))))
+(define circle (lambda (color) (do
+   (define circle-helper (lambda (n rot triangles)
+      (if (= n 32) triangles
+         (do (define shape (c color))
+             (define new_rot (+ rot (/ pi 4 2 2)))
+             ;(print (+ "rotating " n  " times. deg: "
+             ;          (- 0 new_rot) " shape: " shape))
+             (rotate shape (- 0 new_rot))
+             (circle-helper (+ n 1) new_rot (cons shape triangles))))))
+   (circle-helper 0 0 nil))))
 
-(f 500 0)
+;(define rgb (cons red (cons green (cons blue nil))))
+;(define repeat (lambda (n lst) (if (= n 1) lst (append lst (repeat (- n 1) lst)))))
+;(define colors (repeat 20 rgb))
 
-;(define s1 (triangle "s1" red))
-;(rotate s1 1.6)
+;(f 0 0 colors nil)
 
-;(define s2 (triangle "s2" red))
-;(rotate s2 3.14)
-
-;(define s3 (triangle "s3" red))
-;(rotate s3 4.7)
-
-;(define s4 (triangle "s4" red))
-;(rotate s4 6.1)
-
+(define c1 (circle red))
+(define c2 (circle blue))
+(map (lambda (x) (resize x 0.3 0.3)) c2)

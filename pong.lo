@@ -1,6 +1,4 @@
-(load "graphics.lo")
-
-(define ball (t "data/ball.png"))
+(define ball (t "data/opengl.png"))
 (define p1 (shape square red))
 (define p2 (shape square blue))
 
