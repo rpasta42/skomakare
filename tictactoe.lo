@@ -42,10 +42,6 @@
 
    squares)))
 
-(define board-locations (draw-board red))
-;(w)hite, (b)lack, (e)mpty
-(define board (map (lambda (s) (cons "e" s))))
-
 (define apply (lambda (f lst) (do
    (define len (length lst))
    (if (= len 0)
@@ -58,38 +54,108 @@
                (f (car lst) (cadr lst) (list-ref lst 2))
                (print (+ "can't apply function to " (length lst) " arguments")))))))))
 
-;pass (cons "player" squaren) -> return player who won
-(define check-3 (lambda (a b c) (do
-   (define player-abc (map (lambda (x) (car x)) (cons a (cons b (cons c nil)))))
+;pass item = (cons "player-color" squaren) -> return player who won
+(define check-3 (lambda (items) (do
+   (define player-abc (map (lambda (x) (car x)) items))
    (define first (car player-abc))
-   (if (and (apply = player-abc) (not (= first "e")))
+   (if (apply = player-abc)
       first
       "e"))))
 
-(define check-winner (lambda (board)
-   (define check-row (lamba (r)
-      (map (lambda (x)
-         (range 0 3))
+(define get-square (lambda (board x) (list-ref board x)))
+
+;TODO: make this work for vertical and horizontal
+(define check-winner (lambda (board) (do
+   (define rows
+      (map (lambda (x) (do
+               (define n (* x 3))
+               (cons n (cons (+ n 1) (cons (+ n 2) nil)))))
+           (range 0 2)))
+   (define row-win
+      (map (lambda (row)
+               (check-3 (map (lambda (x) (get-square board x)) row))
+           rows)
+   (define col-win nil)
+   (define diag-win nil)
+   (define any-win (filter (lambda (x) (not (= x "e"))) (append row-win col-win diag-win)))
+   (if (> (length any-win) 0)
+      (car any-win)
+      "e"))))))
 
 (define get-mouse-clicks (lambda () (do
    (define events (check_events))
    (if (null? events)
-      (do (print "no events") (cons 0 0))
+;      (do (print "no events") (cons 0 0))
+      (cons 0 0)
       (if (= (car events) "mouse")
          (do (define clicks (cdr events))
-             (print (+ "click x: " (car clicks) " y: " (cdr clicks)))
+;             (print (+ "click x: " (car clicks) " y: " (cdr clicks)))
              clicks)
-         (do (print "non-click event") (cons 0 0)))))))
+         (do
+;             (print "non-click event")
+             (cons 0 0)))))))
 
-(define play (lambda (n)
-   (if (= n 0) "done"
+;TODO: test this out
+;0-9 or -1 if not on square
+(define map-click-to-square (lambda (x y) (do
+   (define row-1-y-start 0.278)
+   (define row-1-y-end 0.423)
+   (define col-1-x-start 0.328)
+   (define col-1-x-end 0.43)
+
+   (define row-2-y-start 0.423)
+   (define row-2-y-end 0.57)
+   (define col-2-x-start 0.47)
+   (define col-2-x-end 0.62)
+
+   (define row-3-y-start 0.57)
+   (define row-3-y-end 0.72)
+   (define col-3-x-start 0.63)
+   (define col-3-x-end 0.774)
+
+   (define col-click
+      (if (and (> x col-1-x-start) (< x col-1-x-end))
+         0
+         (if (and (> x col-2-x-start) (< x col-2-x-end))
+            1
+            (if (and (> x col-3-x-start) (< x col-3-x-end))
+               2
+               -1))))
+   (define row-click
+      (if (and (> y row-1-y-start) (< y row-1-y-end))
+         0
+         (if (and (> y row-2-y-start) (< y row-2-y-end))
+            1
+            (if (and (> y row-3-y-start) (< y row-3-y-end))
+               2
+               -1))))
+   (print (+ "col-click: " col-click))
+   (print (+ "row-click: " row-click))
+   (if (or (= row-click -1) (= col-click -1))
+      -1
+      (+ (* row-click 3) col-click)))))
+
+;TODO: checks if square is free, and if it is, then return ok move
+(define test-ok-move (lambda (board square) true))
+
+;TODO: implement gameplay
+(define play (lambda (n b)
+   (if (= n 0) "oops gotta increase n when calling (play n board)"
       (do
-         (sleep 1)
+         (sleep 2)
          (define clicks (get-mouse-clicks))
-         (if (null? clicks)
-            (print "no clicks")
-            (print (+ "x: " (car clicks) " y: " (cdr clicks))))
-         (play (- n 1))))))
+         (define x (car clicks))
+         (define y (cdr clicks))
+         (define square_click (map-click-to-square x y))
+         (if (not (= square_click -1))
+            (print (+ "square:" (map-click-to-square x y)))
+            "")
+         (play (- n 1) board)))))
 
-(play 100)
+(define game (lambda () (do
+   (define board-locations (draw-board red))
+;(w)hite, (b)lack, (e)mpty
+   (define board (map (lambda (s) (cons "e" s))))
+   (play 100 board))))
 
+(game)
