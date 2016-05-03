@@ -47,6 +47,10 @@
                (f (car lst) (cadr lst) (list-ref lst 2))
                (print (+ "can't apply function to " (length lst) " arguments")))))))))
 
+(define get-player (lambda (x) (car x)))
+(define get-square-n (lambda (x) (cdr x)))
+(define get-square (lambda (board x) (list-ref board x)))
+
 ;pass item = (cons "player-color" squaren) -> return player who won
 (define check-3 (lambda (items) (do
    (define player-abc (map (lambda (x) (car x)) items))
@@ -55,7 +59,6 @@
       first
       "e"))))
 
-(define get-square (lambda (board x) (list-ref board x)))
 
 ;TODO: make this work for vertical and horizontal
 (define check-winner (lambda (board) (do
@@ -85,7 +88,7 @@
          (do (define clicks (cdr events))
 ;             (print (+ "click x: " (car clicks) " y: " (cdr clicks)))
              clicks)
-         (do
+         (do (+ 1 1)
 ;             (print "non-click event")
              (cons 0 0)))))))
 
@@ -130,17 +133,22 @@
       (+ (* row-click 3) col-click)))))
 
 ;TODO: checks if square is free, and if it is, then return ok move
-(define test-ok-move (lambda (board square)
-   (and (not (= square -1)) (= "e" (car (get-square board square))))))
+;(define test-ok-move (lambda (board square)
+;   (and (not (= square -1)) (= "e" (get-player (get-square board square))))))
+(define test-ok-move (lambda (board square) (do
+   (if (= square -1)
+      false
+      (= "e" (get-player (get-square board square)))))))
 
 (define get-next-player (lambda (cur-player) (if (= cur-player "w") "b" "w")))
+
+(define test-loop (lambda () (do (print "got here ok") (sleep 2))))
 
 ;TODO: implement gameplay
 (define play (lambda (n b p_turn)
    (if (= n 0) "oops gotta increase n when calling (play n board)"
       (do
-         (sleep 0.5)
-         (print "got here ok")
+         (sleep 0.05)
          (define clicks (get-mouse-clicks))
          (define square-click (map-click-to-square (car clicks) (cdr clicks)))
          (if (test-ok-move b square-click)
