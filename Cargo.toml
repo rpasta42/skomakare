@@ -4,7 +4,7 @@ version = "0.0.2"
 authors = ["Kostyantyn Kovalskyy <kostelkow@gmail.com>"]
 
 [dependencies]
-glium = "*"
+glium = "0.14.0"
 image = "*"
-LambdaOxide = { git = "https://github.com/KostyaKow/LambdaOxide.git", version = "0.1.5" }
+LambdaOxide = { git = "https://github.com/KostyaKow/LambdaOxide.git", version = "0.1.7" }
 

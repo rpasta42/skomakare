@@ -22,8 +22,8 @@
 (define set-square-pos (lambda (square x y)
    (move square (* 0.3 x) (- 0 (* 0.3 y)))))
 
-(define draw-board (lambda (init_color) (do
-   (define squares (get-squares init_color))
+(define draw-board (lambda (init-color) (do
+   (define squares (get-squares init-color))
    (map (lambda (x) (normalize-square x)) squares)
    (define fold_f (lambda (square n) (do
       (print (+ "current n:" n " square: " square))
@@ -35,30 +35,18 @@
 
    squares)))
 
-(define apply (lambda (f lst) (do
-   (define len (length lst))
-   (if (= len 0)
-      (f)
-      (if (= len 1)
-         (f (car lst))
-         (if (= len 2)
-            (f (car lst) (cadr lst))
-            (if (= len 3)
-               (f (car lst) (cadr lst) (list-ref lst 2))
-               (print (+ "can't apply function to " (length lst) " arguments")))))))))
-
-(define get-player (lambda (x) (car x)))
-(define get-square-n (lambda (x) (cdr x)))
+(define get-player (lambda (x) (if (null? x) nil (car x))))
+(define get-square-model-n (lambda (x) (cdr x)))
 (define get-square (lambda (board x) (list-ref board x)))
 
 ;pass item = (cons "player-color" squaren) -> return player who won
 (define check-3 (lambda (items) (do
-   (define player-abc (map (lambda (x) (car x)) items))
+   (define player-abc (map (lambda (square) (get-player square)) items))
+   (print (+ "checking " (list-ref player-abc 0) " " (list-ref player-abc 1) " " (list-ref player-abc 2)))
    (define first (car player-abc))
    (if (apply = player-abc)
       first
       "e"))))
-
 
 ;TODO: make this work for vertical and horizontal
 (define check-winner (lambda (board) (do
@@ -71,8 +59,15 @@
       (map (lambda (row)
                (check-3 (map (lambda (x) (get-square board x)) row)))
            rows))
-   (define col-win nil)
-   (define diag-win nil)
+   (define diag-win-1 (check-3 (cons (get-square board 0) (cons (get-square board 4) (cons (get-square board 8) nil)))))
+   (define diag-win-2 (check-3 (cons (get-square board 2) (cons (get-square board 4) (cons (get-square board 6) nil)))))
+   (define diag-win (cons diag-win-1 (cons diag-win-2 nil)))
+
+   (define col-win-1 (check-3 (cons (get-square board 0) (cons (get-square board 3) (cons (get-square board 6) nil)))))
+   (define col-win-2 (check-3 (cons (get-square board 1) (cons (get-square board 4) (cons (get-square board 7) nil)))))
+   (define col-win-3 (check-3 (cons (get-square board 2) (cons (get-square board 5) (cons (get-square board 8) nil)))))
+   (define col-win (cons col-win-1 (cons col-win-2 (cons col-win-3 nil))))
+
    (define any-win (filter (lambda (x) (not (= x "e")))
                            (append row-win (append col-win diag-win))))
    (if (> (length any-win) 0)
@@ -135,37 +130,63 @@
 ;TODO: checks if square is free, and if it is, then return ok move
 ;(define test-ok-move (lambda (board square)
 ;   (and (not (= square -1)) (= "e" (get-player (get-square board square))))))
-(define test-ok-move (lambda (board square) (do
+(define test-ok-move (lambda (board square)
    (if (= square -1)
-      false
-      (= "e" (get-player (get-square board square)))))))
+      (do (print "kk: square = -1")
+          false)
+      (do 
+          (print (+ "kk: " (car (car board))))
+          (define player (get-player (get-square board square)))
+          (print (+ "null player?: " (null? player)))
+          (if (null? player)
+               false
+               (= "e" player))))))
 
 (define get-next-player (lambda (cur-player) (if (= cur-player "w") "b" "w")))
 
 (define test-loop (lambda () (do (print "got here ok") (sleep 2))))
 
+(define get-square-color (lambda (player)
+   (if (= player "w") green (if (= player "b") blue red))))
+
 ;TODO: implement gameplay
-(define play (lambda (n b p_turn)
+(define play (lambda (n board p-turn)
    (if (= n 0) "oops gotta increase n when calling (play n board)"
       (do
-         (sleep 0.05)
+         (print-board board)
+         (sleep 0.1)
          (define clicks (get-mouse-clicks))
-         (define square-click (map-click-to-square (car clicks) (cdr clicks)))
-         (if (test-ok-move b square-click)
-            (do (print (+ p_turn " moves to square: " square-click))
-                (define winner (check-winner b))
+         (define clicked-square (map-click-to-square (car clicks) (cdr clicks)))
+         (print (+ "clicked on square " clicked-square))
+         (if (test-ok-move board clicked-square)
+            (do (print "test")
+                (print (+ "!!!need to get here: ok move: " p-turn " moves to square: " clicked-square))
+                (define winner (check-winner board))
+                (define move-square (get-square board clicked-square))
+                (define xy (square-index-to-xy (+ 1 clicked-square)))
+                (define new-square (s (get-square-color p-turn)))
+                (normalize-square new-square)
+                (set-square-pos new-square (car xy) (cdr xy))
+                (move (get-square-model-n move-square) 10 10)
                 (if (= winner "e")
-                  (do (define last-move (get-square b square-click))
-                      (play (- n 1)
-                            (modify-lst b square-click (cons p_turn (cdr last-move)))
-                            (get-next-player p_turn)))
-                  (print (+ p_turn " won!!!"))))
-            (play (- n 1) b p_turn))))))
+                  (do (play (- n 1)
+                            (modify-lst board clicked-square (cons p-turn new-square))
+                            (get-next-player p-turn)))
+                  (print (+ p-turn " won!!!"))))
+            (do (print "not ok move")
+                (play (- n 1) board p-turn)))))))
+
+(define print-board (lambda (board) (do
+   (define str-brd
+      (fold (lambda (square init_str) (+ init_str " " (car square)))
+            ""
+            board))
+   (print (+ "board: " str-brd)))))
 
 (define game (lambda () (do
    (define board-locations (draw-board red))
 ;(w)hite, (b)lack, (e)mpty
-   (define board (map (lambda (s) (cons "e" s))))
-   (play 100 board "w"))))
+   (define board (map (lambda (s) (cons "e" s)) board-locations))
+   (play 1000 board "w"))))
 
 (game)
