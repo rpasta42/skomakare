@@ -40,8 +40,8 @@
 (define get-square (lambda (board x) (list-ref board x)))
 
 ;pass item = (cons "player-color" squaren) -> return player who won
-(define check-3 (lambda (items) (do
-   (define player-abc (map (lambda (square) (get-player square)) items))
+(define check-3 (lambda (a b c) (do
+   (define player-abc (map (lambda (square) (get-player square)) (cons a (cons b (cons c nil)))))
    (print (+ "checking " (list-ref player-abc 0) " " (list-ref player-abc 1) " " (list-ref player-abc 2)))
    (define first (car player-abc))
    (if (apply = player-abc)
@@ -50,22 +50,27 @@
 
 ;TODO: make this work for vertical and horizontal
 (define check-winner (lambda (board) (do
-   (define rows
-      (map (lambda (x) (do
-               (define n (* x 3))
-               (cons n (cons (+ n 1) (cons (+ n 2) nil)))))
-           (range 0 2)))
-   (define row-win
-      (map (lambda (row)
-               (check-3 (map (lambda (x) (get-square board x)) row)))
-           rows))
-   (define diag-win-1 (check-3 (cons (get-square board 0) (cons (get-square board 4) (cons (get-square board 8) nil)))))
-   (define diag-win-2 (check-3 (cons (get-square board 2) (cons (get-square board 4) (cons (get-square board 6) nil)))))
+;   (define rows
+;      (map (lambda (x) (do
+;               (define n (* x 3))
+;               (cons n (cons (+ n 1) (cons (+ n 2) nil)))))
+;           (range 0 2)))
+;   (define row-win
+;      (map (lambda (row)
+;               (apply check-3 (map (lambda (x) (get-square board x)) row)))
+;           rows))
+   (define row-win-1 (check-3 (get-square board 0) (get-square board 1) (get-square board 2)))
+   (define row-win-2 (check-3 (get-square board 3) (get-square board 4) (get-square board 5)))
+   (define row-win-3 (check-3 (get-square board 6) (get-square board 7) (get-square board 8)))
+   (define row-win (cons row-win-1 (cons row-win-2 (cons row-win-3 nil))))
+
+   (define diag-win-1 (check-3 (get-square board 0) (get-square board 4) (get-square board 8)))
+   (define diag-win-2 (check-3 (get-square board 2) (get-square board 4) (get-square board 6)))
    (define diag-win (cons diag-win-1 (cons diag-win-2 nil)))
 
-   (define col-win-1 (check-3 (cons (get-square board 0) (cons (get-square board 3) (cons (get-square board 6) nil)))))
-   (define col-win-2 (check-3 (cons (get-square board 1) (cons (get-square board 4) (cons (get-square board 7) nil)))))
-   (define col-win-3 (check-3 (cons (get-square board 2) (cons (get-square board 5) (cons (get-square board 8) nil)))))
+   (define col-win-1 (check-3 (get-square board 0) (get-square board 3) (get-square board 6)))
+   (define col-win-2 (check-3 (get-square board 1) (get-square board 4) (get-square board 7)))
+   (define col-win-3 (check-3 (get-square board 2) (get-square board 5) (get-square board 8)))
    (define col-win (cons col-win-1 (cons col-win-2 (cons col-win-3 nil))))
 
    (define any-win (filter (lambda (x) (not (= x "e")))
@@ -161,16 +166,17 @@
          (if (test-ok-move board clicked-square)
             (do (print "test")
                 (print (+ "!!!need to get here: ok move: " p-turn " moves to square: " clicked-square))
-                (define winner (check-winner board))
                 (define move-square (get-square board clicked-square))
                 (define xy (square-index-to-xy (+ 1 clicked-square)))
                 (define new-square (s (get-square-color p-turn)))
                 (normalize-square new-square)
                 (set-square-pos new-square (car xy) (cdr xy))
                 (move (get-square-model-n move-square) 10 10)
+                (define new-board (modify-lst board clicked-square (cons p-turn new-square)))
+                (define winner (check-winner new-board))
                 (if (= winner "e")
                   (do (play (- n 1)
-                            (modify-lst board clicked-square (cons p-turn new-square))
+                            new-board
                             (get-next-player p-turn)))
                   (print (+ p-turn " won!!!"))))
             (do (print "not ok move")
