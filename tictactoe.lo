@@ -1,13 +1,6 @@
 ;$ cargo run
 ;(l "tictactoe.lo")
 
-(define repeat (lambda (n lst) (if (= n 1) lst (append lst (repeat (- n 1) lst)))))
-(define loop (lambda (n f) (if (= n 0) nil (cons (f) (loop (- n 1) f)))))
-(define range (lambda (start end)
-   (if (> start end)
-      nil
-      (cons start (range (+ start 1) end)))))
-
 (define normalize-square (lambda (square) (do
    (resize square 0.29 0.29)
    (move square -0.5 0.3))))
@@ -73,14 +66,15 @@
            (range 0 2)))
    (define row-win
       (map (lambda (row)
-               (check-3 (map (lambda (x) (get-square board x)) row))
-           rows)
+               (check-3 (map (lambda (x) (get-square board x)) row)))
+           rows))
    (define col-win nil)
    (define diag-win nil)
-   (define any-win (filter (lambda (x) (not (= x "e"))) (append row-win col-win diag-win)))
+   (define any-win (filter (lambda (x) (not (= x "e")))
+                           (append row-win (append col-win diag-win))))
    (if (> (length any-win) 0)
       (car any-win)
-      "e"))))))
+      "e"))))
 
 (define get-mouse-clicks (lambda () (do
    (define events (check_events))
@@ -136,26 +130,34 @@
       (+ (* row-click 3) col-click)))))
 
 ;TODO: checks if square is free, and if it is, then return ok move
-(define test-ok-move (lambda (board square) true))
+(define test-ok-move (lambda (board square)
+   (and (not (= square -1)) (= "e" (car (get-square board square))))))
+
+(define get-next-player (lambda (cur-player) (if (= cur-player "w") "b" "w")))
 
 ;TODO: implement gameplay
-(define play (lambda (n b)
+(define play (lambda (n b p_turn)
    (if (= n 0) "oops gotta increase n when calling (play n board)"
       (do
-         (sleep 2)
+         (sleep 0.5)
+         (print "got here ok")
          (define clicks (get-mouse-clicks))
-         (define x (car clicks))
-         (define y (cdr clicks))
-         (define square_click (map-click-to-square x y))
-         (if (not (= square_click -1))
-            (print (+ "square:" (map-click-to-square x y)))
-            "")
-         (play (- n 1) board)))))
+         (define square-click (map-click-to-square (car clicks) (cdr clicks)))
+         (if (test-ok-move b square-click)
+            (do (print (+ p_turn " moves to square: " square-click))
+                (define winner (check-winner b))
+                (if (= winner "e")
+                  (do (define last-move (get-square b square-click))
+                      (play (- n 1)
+                            (modify-lst b square-click (cons p_turn (cdr last-move)))
+                            (get-next-player p_turn)))
+                  (print (+ p_turn " won!!!"))))
+            (play (- n 1) b p_turn))))))
 
 (define game (lambda () (do
    (define board-locations (draw-board red))
 ;(w)hite, (b)lack, (e)mpty
    (define board (map (lambda (s) (cons "e" s))))
-   (play 100 board))))
+   (play 100 board "w"))))
 
 (game)
