@@ -3,43 +3,93 @@
 
 (define repeat (lambda (n lst) (if (= n 1) lst (append lst (repeat (- n 1) lst)))))
 (define loop (lambda (n f) (if (= n 0) nil (cons (f) (loop (- n 1) f)))))
+(define range (lambda (start end)
+   (if (> start end)
+      nil
+      (cons start (range (+ start 1) end)))))
+
+(define normalize-square (lambda (square) (do
+   (resize square 0.29 0.29)
+   (move square -0.5 0.3))))
+
+(define get-squares (lambda (color)
+   (loop 9 (lambda () (s color)))))
+
+(define square-index-to-xy (lambda (n) (do
+   (define x
+      (if (> n 6)
+         (- n 6)
+         (if (> n 3) (- n 3) n)))
+   (define y
+      (if (> n 6)
+         2
+         (if (> n 3) 1 0)))
+   (cons x y))))
+
+(define set-square-pos (lambda (square x y)
+   (move square (* 0.3 x) (- 0 (* 0.3 y)))))
 
 (define draw-board (lambda (init_color) (do
-   (define squares (loop 9 (lambda () (s init_color))))
-   (map (lambda (x) (do (resize x 0.29 0.29) (move x -0.5 0.3))) squares)
+   (define squares (get-squares init_color))
+   (map (lambda (x) (normalize-square x)) squares)
    (define fold_f (lambda (square n) (do
       (print (+ "current n:" n " square: " square))
-      (define x (if (> n 6)
-                  (- n 6)
-                  (if (> n 3) (- n 3) n)))
-      (define y (if (> n 6)
-                  2
-                  (if (> n 3) 1 0)))
-      (move square (* 0.3 x) (- 0 (* 0.3 y)))
+      (define xy (square-index-to-xy n))
+      (set-square-pos square (car xy) (cdr xy))
       (+ n 1))))
    (print "calling fold with: ")
    (fold fold_f 1 squares)
 
    squares)))
 
-(define board (draw-board red))
+(define board-locations (draw-board red))
+;(w)hite, (b)lack, (e)mpty
+(define board (map (lambda (s) (cons "e" s))))
 
-(define check-mouse (lambda () (do
+(define apply (lambda (f lst) (do
+   (define len (length lst))
+   (if (= len 0)
+      (f)
+      (if (= len 1)
+         (f (car lst))
+         (if (= len 2)
+            (f (car lst) (cadr lst))
+            (if (= len 3)
+               (f (car lst) (cadr lst) (list-ref lst 2))
+               (print (+ "can't apply function to " (length lst) " arguments")))))))))
+
+;pass (cons "player" squaren) -> return player who won
+(define check-3 (lambda (a b c) (do
+   (define player-abc (map (lambda (x) (car x)) (cons a (cons b (cons c nil)))))
+   (define first (car player-abc))
+   (if (and (apply = player-abc) (not (= first "e")))
+      first
+      "e"))))
+
+(define check-winner (lambda (board)
+   (define check-row (lamba (r)
+      (map (lambda (x)
+         (range 0 3))
+
+(define get-mouse-clicks (lambda () (do
    (define events (check_events))
    (if (null? events)
-      nil
+      (do (print "no events") (cons 0 0))
       (if (= (car events) "mouse")
-         (cdr events)
-         nil)))))
+         (do (define clicks (cdr events))
+             (print (+ "click x: " (car clicks) " y: " (cdr clicks)))
+             clicks)
+         (do (print "non-click event") (cons 0 0)))))))
 
 (define play (lambda (n)
    (if (= n 0) "done"
       (do
-         (sleep 0.1)
-         (define clicks (check-mouse))
+         (sleep 1)
+         (define clicks (get-mouse-clicks))
          (if (null? clicks)
             (print "no clicks")
             (print (+ "x: " (car clicks) " y: " (cdr clicks))))
          (play (- n 1))))))
 
 (play 100)
+

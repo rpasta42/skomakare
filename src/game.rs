@@ -112,12 +112,15 @@ impl Game {
                use glium::glutin::MouseButton::Left;
 
                match e {
-                  Event::MouseMoved((x, y)) => {
+                  //Event::MouseMoved((x, y)) => {
+                  Event::MouseMoved(x, y) => {
                      //let (w_w, w_h) = self.window.get_inner_size_pixels().unwrap();
                      //self.mouse_pos.0 = (x as f32) / (w_w as f32);
                      //self.mouse_pos.1 = (y as f32) / (w_h as f32);
-                     self.mouse_pos.0 = x as f32 / 657.0;
-                     self.mouse_pos.1 = y as f32 / 533.0;
+                     let screen_size = self.display.get_framebuffer_dimensions();
+                     let (screen_width, screen_height) = (screen_size.0 as f32, screen_size.1 as f32);
+                     self.mouse_pos.0 = x as f32 / screen_width; //657.0;
+                     self.mouse_pos.1 = y as f32 / screen_height; //533.0;
                   },
                   Event::KeyboardInput(_, _, Some(key)) => key_events.push(e),
                   Event::MouseInput(Released, Left) => click_events.push(self.mouse_pos),
