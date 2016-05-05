@@ -81,19 +81,44 @@ impl Shape {
 
       let data = read_file(path).unwrap();
 
+      let mut rect_verts = Vec::new();
+
       let lines = data.split("\n").collect::<Vec<&str>>();
       for line in lines.iter() {
          let words = line.split(" ").collect::<Vec<&str>>();
          //TODO: check words >= 1
-         if words[0] == "#" { continue; }  //let first = char_at(line, 0).unwrap(); if (first == '#') continue;
+         if words[0] == "#" { continue; }
          else if words[0] == "v" {
             if words.len() != 4 {
-               println!("bad line: {}", line)
+               println!("bad line: {}", line);
             } else {
-               self.add_coords(s_to_f(words[1]), s_to_f(words[2]), 0.0, 0.0);//s_to_f(words[3]));
+               let v = ColorVertex {
+                  pos: [s_to_f(words[1]), s_to_f(words[2])],  //s_to_f(words[3]));
+                  tex_pos : [0.0, 0.0]
+               };
+               rect_verts.push(v);
             }
          }
          else { /*println!("known line type {}", words[0]);*/ }
+      }
+
+      let mut rect_ctr = 0;
+      let mut rect = Vec::new();
+      for vert in rect_verts {
+         //self.add(rectangle);
+
+         rect.push(vert);
+         rect_ctr += 1;
+         if rect_ctr == 4 {
+            self.add(rect[0]);
+            self.add(rect[1]);
+            self.add(rect[2]);
+            self.add(rect[0]);
+            self.add(rect[1]);
+            self.add(rect[3]);
+            rect = Vec::new();
+            rect_ctr = 0;
+         }
       }
       //self.primitive_type = Some(PrimitiveType::Points);
       //self.primitive_type = Some(PrimitiveType::TriangleFan);
