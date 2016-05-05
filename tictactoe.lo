@@ -42,7 +42,7 @@
 ;pass item = (cons "player-color" squaren) -> return player who won
 (define check-3 (lambda (a b c) (do
    (define player-abc (map (lambda (square) (get-player square)) (cons a (cons b (cons c nil)))))
-   (print (+ "checking " (list-ref player-abc 0) " " (list-ref player-abc 1) " " (list-ref player-abc 2)))
+;   (print (+ "checking " (list-ref player-abc 0) " " (list-ref player-abc 1) " " (list-ref player-abc 2)))
    (define first (car player-abc))
    (if (apply = player-abc)
       first
@@ -137,12 +137,9 @@
 ;   (and (not (= square -1)) (= "e" (get-player (get-square board square))))))
 (define test-ok-move (lambda (board square)
    (if (= square -1)
-      (do (print "kk: square = -1")
-          false)
-      (do 
-          (print (+ "kk: " (car (car board))))
+      false
+      (do
           (define player (get-player (get-square board square)))
-          (print (+ "null player?: " (null? player)))
           (if (null? player)
                false
                (= "e" player))))))
@@ -152,7 +149,9 @@
 (define test-loop (lambda () (do (print "got here ok") (sleep 2))))
 
 (define get-square-color (lambda (player)
-   (if (= player "w") green (if (= player "b") blue red))))
+   (if (= player "w") "resources/x.png" (if (= player "b") "resources/o.png" red))))
+
+(define p-to-name (lambda (p) (if (= p "w") "x" "o")))
 
 ;TODO: implement gameplay
 (define play (lambda (n board p-turn)
@@ -164,9 +163,7 @@
          (define clicked-square (map-click-to-square (car clicks) (cdr clicks)))
          (print (+ "clicked on square " clicked-square))
          (if (test-ok-move board clicked-square)
-            (do (print "test")
-                (print (+ "!!!need to get here: ok move: " p-turn " moves to square: " clicked-square))
-                (define move-square (get-square board clicked-square))
+            (do (define move-square (get-square board clicked-square))
                 (define xy (square-index-to-xy (+ 1 clicked-square)))
                 (define new-square (s (get-square-color p-turn)))
                 (normalize-square new-square)
@@ -178,7 +175,7 @@
                   (do (play (- n 1)
                             new-board
                             (get-next-player p-turn)))
-                  (print (+ p-turn " won!!!"))))
+                  (print (+ (p-to-name p-turn) " won!!!"))))
             (do (print "not ok move")
                 (play (- n 1) board p-turn)))))))
 
