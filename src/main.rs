@@ -216,7 +216,12 @@ fn main() {
                   "triangle" => Shape::new_builtin(BuiltInShape::Triangle),
                   "circle" => Shape::new_builtin(BuiltInShape::Circle),
                   "square" => Shape::new_builtin(BuiltInShape::Rectangle),
-                  _ => panic!("unsuported shape")
+                  shape_path => {
+                     //panic!("unsuported shape")
+                     let mut s = Shape::new();
+                     s.from_obj_file(shape_path);
+                     s
+                  }
                };
                model_builder.shape(shape);
 

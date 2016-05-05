@@ -68,7 +68,8 @@ impl Game {
                                    .unwrap();
 
             use glium::index::{NoIndices, PrimitiveType};
-            let indices = NoIndices(PrimitiveType::TrianglesList);
+            //NoIndices(PrimitiveType::TrianglesList);
+            let indices = NoIndices(shape.primitive_type.unwrap());
             let ref shaders = self.shader_manager.shaders;
             let shader_name = m.shader_name.clone().unwrap();
             let program = shaders.get(&*shader_name).unwrap();

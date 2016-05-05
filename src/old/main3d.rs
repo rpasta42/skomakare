@@ -9,7 +9,7 @@ Open object file. Look for f (face)
 vertex index/uv index/normal index *3
 vn = vertex normal x y z
 s = specular
-vt = uv = texture coordinates. mapping 
+vt = uv = texture coordinates. mapping
 */
 
 fn read_file(path_str : &str) -> Option<String> {
@@ -81,7 +81,7 @@ fn char_at(s : &str, n : usize) -> Option<char> {
 
 fn parse_obj(data : &str) -> Model {
    let mut m = Model::new();
-   
+
    let lines = data.split("\n").collect::<Vec<&str>>();
    for line in lines.iter() {
       let words = line.split(" ").collect::<Vec<&str>>();
@@ -117,8 +117,8 @@ fn draw(m : &Model) {
    //let normals = None; //glium::n;
 
    let i_type = glium::index::PrimitiveType::TrianglesList; //doesnt work
-   //let i_type = glium::index::PrimitiveType::LinesListAdjacency; //bad 
-   //let i_type = glium::index::PrimitiveType::LinesList; //bad 
+   //let i_type = glium::index::PrimitiveType::LinesListAdjacency; //bad
+   //let i_type = glium::index::PrimitiveType::LinesList; //bad
    //let i_type = glium::index::PrimitiveType::LineStrip; //bad
    //let i_type = glium::index::PrimitiveType::LineStripAdjacency; //bad'
    //let i_type = glium::index::PrimitiveType::Points; //ok-ish

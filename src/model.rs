@@ -6,16 +6,26 @@ use glium::backend::glutin_backend::GlutinFacade;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use glium::index::PrimitiveType;
+
+
 #[derive(Debug)]
 pub enum BuiltInShape {
    Rectangle, Triangle, Circle
 }
 #[derive(Clone)]
 pub struct Shape {
-   pub vertices : Vec<ColorVertex>
+   pub vertices : Vec<ColorVertex>,
+   pub primitive_type : Option<PrimitiveType>
+
 }
 impl Shape {
-   pub fn new() -> Shape { Shape { vertices : Vec::new() } }
+   pub fn new() -> Shape {
+      Shape {
+         vertices : Vec::new(),
+         primitive_type : None
+      }
+   }
    pub fn new_builtin(shape_type : BuiltInShape) -> Shape {
       let mut shape = Shape::new(); //TODO
       match shape_type {
@@ -56,10 +66,36 @@ impl Shape {
          },
          //_ => { panic!("not implemented {:?}", shape_type); }
       }
+      shape.primitive_type = Some(PrimitiveType::TrianglesList);
       shape
    }
-   pub fn new_vertices(vertices_ : Vec<ColorVertex>) -> Shape {
-      Shape { vertices : vertices_ }
+   pub fn new_vertices(vertices_ : Vec<ColorVertex>,
+                       primitive_type : PrimitiveType)
+   -> Shape
+   {
+      Shape { vertices : vertices_, primitive_type : Some(primitive_type) }
+   }
+   //primitivetype::Points;
+   pub fn from_obj_file(&mut self, path : &str) {
+      use utils::{read_file, s_to_f};
+
+      let data = read_file(path).unwrap();
+
+      let lines = data.split("\n").collect::<Vec<&str>>();
+      for line in lines.iter() {
+         let words = line.split(" ").collect::<Vec<&str>>();
+         //TODO: check words >= 1
+         if words[0] == "#" { continue; }  //let first = char_at(line, 0).unwrap(); if (first == '#') continue;
+         else if words[0] == "v" {
+            if words.len() != 4 {
+               println!("bad line: {}", line)
+            } else {
+               self.add_coords(s_to_f(words[1]), s_to_f(words[2]), 0.0, 0.0);//s_to_f(words[3]));
+            }
+         }
+         else { /*println!("known line type {}", words[0]);*/ }
+      }
+      self.primitive_type = Some(PrimitiveType::Points);
    }
    pub fn add(&mut self, v : ColorVertex) {
       self.vertices.push(v);

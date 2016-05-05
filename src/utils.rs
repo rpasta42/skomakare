@@ -4,19 +4,17 @@ use types::*;
 use glium::texture::{Texture2d, RawImage2d};
 use std::io::Cursor;
 
-#[allow(dead_code)]
+
 pub fn char_at(s : &str, n : usize) -> Option<char> {
    for (i, c) in s.chars().enumerate() {
       if i == n { return Some(c) }
    } return None
 }
 
-/*
-#[allow(dead_code)]
 pub fn s_to_f(s : &str) -> f32 {
    s.parse::<f32>().unwrap()
 }
-
+/*
 fn display_file(path : &str) {
    let data = read_file(path).unwrap();
    let m = parse_obj(&data);
