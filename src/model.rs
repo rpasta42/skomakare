@@ -102,11 +102,12 @@ impl Shape {
          else { /*println!("known line type {}", words[0]);*/ }
       }
 
-      let mut rect_ctr = 0;
+      for vert in rect_verts {
+         self.add(vert);
+      }
+      /*let mut rect_ctr = 0;
       let mut rect = Vec::new();
       for vert in rect_verts {
-         //self.add(rectangle);
-
          rect.push(vert);
          rect_ctr += 1;
          if rect_ctr == 4 {
@@ -119,11 +120,12 @@ impl Shape {
             rect = Vec::new();
             rect_ctr = 0;
          }
-      }
+      }*/
+
       //self.primitive_type = Some(PrimitiveType::Points);
       //self.primitive_type = Some(PrimitiveType::TriangleFan);
-      self.primitive_type = Some(PrimitiveType::TrianglesList);
-
+      //self.primitive_type = Some(PrimitiveType::TrianglesList);
+      self.primitive_type = Some(PrimitiveType::LineStripAdjacency);
 
    }
    pub fn add(&mut self, v : ColorVertex) {
