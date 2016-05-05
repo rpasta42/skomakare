@@ -95,7 +95,11 @@ impl Shape {
          }
          else { /*println!("known line type {}", words[0]);*/ }
       }
-      self.primitive_type = Some(PrimitiveType::Points);
+      //self.primitive_type = Some(PrimitiveType::Points);
+      //self.primitive_type = Some(PrimitiveType::TriangleFan);
+      self.primitive_type = Some(PrimitiveType::TrianglesList);
+
+
    }
    pub fn add(&mut self, v : ColorVertex) {
       self.vertices.push(v);
