@@ -6,7 +6,7 @@
    (move square -0.5 0.3))))
 
 (define get-squares (lambda (color)
-   (loop 9 (lambda () (s color)))))
+   (loop 9 (lambda () (square color)))))
 
 (define square-index-to-xy (lambda (n) (do
    (define x
@@ -165,7 +165,7 @@
          (if (test-ok-move board clicked-square)
             (do (define move-square (get-square board clicked-square))
                 (define xy (square-index-to-xy (+ 1 clicked-square)))
-                (define new-square (s (get-square-color p-turn)))
+                (define new-square (square (get-square-color p-turn)))
                 (normalize-square new-square)
                 (set-square-pos new-square (car xy) (cdr xy))
                 (move (get-square-model-n move-square) 10 10)

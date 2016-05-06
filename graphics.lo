@@ -4,10 +4,6 @@
 (define green "green")
 (define blue "blue")
 
-(define triangle "triangle")
-(define square "square")
-(define circle-fan "circle")
-
-(define t (lambda (color) (shape triangle color)))
-(define s (lambda (color) (shape square color)))
-(define c (lambda (color) (shape circle-fan color)))
+(define triangle (lambda (color) (shape "triangle" color)))
+(define square (lambda (color) (shape "square" color)))
+(define circle-fan (lambda (color) (shape "circle" color)))

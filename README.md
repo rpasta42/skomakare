@@ -8,13 +8,15 @@
 
 ```scheme
 $ cargo run
-**>(define my_shape (triangle red))
-**>(move my_shape 0.3 0.3)
+**>(l "circle.lo")
+**>(l "tictactoe.lo")
+**>(define my-triangle (triangle red))
+**>(move my-triangle 0.3 0.3)
 **>(define my-square (square "data/opengl.png"))
 **>(define rotate-square
       (lambda (i)
-         (do (sleep 0.01)
-             (rotate my-square (/ pi 0.5))
+         (do (sleep 0.05)
+             (rotate my-square (/ pi 10))
              (if (> i 0)
                   (rotate-square (- i 1))
                   "done"))))

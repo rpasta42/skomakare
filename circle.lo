@@ -4,7 +4,7 @@
 (define circle (lambda (color) (do
    (define circle-helper (lambda (n rot triangles)
       (if (= n 32) triangles
-         (do (define shape (c color))
+         (do (define shape (circle-fan color))
              (define new_rot (+ rot (/ pi 4 2 2)))
 ;            (print (+ "rotating " n  " times. deg: "
 ;                (- 0 new_rot) " shape: " shape))
@@ -12,7 +12,7 @@
              (circle-helper (+ n 1) new_rot (cons shape triangles))))))
    (circle-helper 0 0 nil))))
 
-(define my-circle (circle "red"))
+(define my-circle (circle-fan "red"))
 
 ;(define rgb (cons red (cons green (cons blue nil))))
 ;(define repeat (lambda (n lst) (if (= n 1) lst (append lst (repeat (- n 1) lst)))))
