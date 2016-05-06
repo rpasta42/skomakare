@@ -190,7 +190,7 @@ fn main() {
    use std::thread::Builder;
 
    let (id_t, id_r) : (IdSender, IdReceiver) = channel();
-   for i in 0..100 { id_t.send(i).unwrap(); }
+   for i in 0..1000 { id_t.send(i).unwrap(); }
 
    let (cmd_t, cmd_r) : (CmdSender, CmdReceiver) = channel();
    let (event_t, event_r) : (EventSender, EventReceiver) = channel();

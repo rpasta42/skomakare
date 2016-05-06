@@ -17,13 +17,6 @@ pub fn s_to_f(s : &str) -> f32 {
 pub fn s_to_usize(s : &str) -> usize {
    s.parse::<usize>().unwrap()
 }
-/*
-fn display_file(path : &str) {
-   let data = read_file(path).unwrap();
-   let m = parse_obj(&data);
-   m.print();
-   draw(&m);
-}
 pub fn read_bin_file(path_str : &str) -> [u8; 12] {
    use std::fs::File;
    use std::io::Read;
@@ -32,7 +25,7 @@ pub fn read_bin_file(path_str : &str) -> [u8; 12] {
    let mut buf = [0u8; 12];
    file.read(&mut buf).unwrap();
    return buf;
-}*/
+}
 
 #[allow(dead_code)]
 pub fn read_file(path_str : &str) -> Option<String> {
@@ -68,7 +61,6 @@ fn img_path_to_image<'a>(img_path : &str) -> RawImage2d<'a, u8> {
    let image_dimensions = image.dimensions();
    RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_dimensions)
 }
-
 pub fn img_path_to_texture(img_path : String, display : &Display) -> Texture2d {
    let image = img_path_to_image(&*img_path);
    Texture2d::new(display, image).unwrap()
