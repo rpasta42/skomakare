@@ -1,11 +1,9 @@
 
-2D Graphics environment with a custom scheme-like scripting language called lambda-oxide (https://github.com/KostyaKow/LambdaOxide). The main aim of the project is to teach lisp to kids and introduce people to progamming. Skomakare is written in rust and uses glium.
+2D Graphics environment with a custom scheme-like scripting language called [lambda-oxide](https://github.com/KostyaKow/LambdaOxide). The main aim of the project is to teach lisp to kids and introduce people to progamming. Skomakare is written in rust and uses glium.
 
-Example Tic Tac Toe game:
-https://github.com/KostyaKow/skomakare/blob/master/tictactoe.lo
+[Example Tic Tac Toe game](https://github.com/KostyaKow/skomakare/blob/master/tictactoe.lo)
 
-Drawing circles:
-https://github.com/KostyaKow/skomakare/blob/master/circle.lo
+[Drawing circle from triangles](https://github.com/KostyaKow/skomakare/blob/master/circle.lo)
 
 
 ```scheme
@@ -50,12 +48,14 @@ What works, what doesn't:
    - [ ] quadtrees
 - [x] mouse and keyboard input
    - Very basic, needs a re-write
-- [ ] lisp shaders
+- [ ] misc
+   - [ ] lisp shaders
+   - [ ] check out stuff from [logo](https://en.wikipedia.org/wiki/Logo_%28programming_language%29)
 
 old todo:
 
 - [ ] TODO
    - [ ] write README.md
-   - [ ] document Lisp API (https://github.com/KostyaKow/skomakare/blob/master/src/main.rs#L53)
+   - [ ] [document Lisp API](https://github.com/KostyaKow/skomakare/blob/master/src/main.rs#L53)
    - [ ] Add pos, rot, scale
 
