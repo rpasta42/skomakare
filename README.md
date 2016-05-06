@@ -47,8 +47,10 @@ What works, what doesn't:
    - [ ] add get_pos, get_rot, get_scale to loscript
 - [ ] scene manager
    - [ ] connecting rust scenemanager to loscript
+   - [ ] quadtrees
 - [x] mouse and keyboard input
    - Very basic, needs a re-write
+- [ ] lisp shaders
 
 old todo:
 
