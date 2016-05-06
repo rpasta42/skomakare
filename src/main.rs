@@ -9,7 +9,7 @@ use glium::glutin::Event;
 
 use std::sync::mpsc::{Sender, Receiver, channel};
 use lambda_oxide::types::{Sexps, arg_extractor, EnvId, err, arg_extract_str, arg_extract_num, Root};
-use lambda_oxide::main::{Env, Callable};
+use lambda_oxide::main::Env;
 use std::cell::RefCell;
 
 use types::*;

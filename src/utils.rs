@@ -4,7 +4,7 @@ use types::*;
 use glium::texture::{Texture2d, RawImage2d};
 use std::io::Cursor;
 
-
+#[allow(dead_code)]
 pub fn char_at(s : &str, n : usize) -> Option<char> {
    for (i, c) in s.chars().enumerate() {
       if i == n { return Some(c) }
@@ -17,6 +17,7 @@ pub fn s_to_f(s : &str) -> f32 {
 pub fn s_to_usize(s : &str) -> usize {
    s.parse::<usize>().unwrap()
 }
+#[allow(dead_code)]
 pub fn read_bin_file(path_str : &str) -> [u8; 12] {
    use std::fs::File;
    use std::io::Read;

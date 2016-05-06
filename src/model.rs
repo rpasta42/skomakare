@@ -3,8 +3,6 @@ use shaders::*;
 use utils::img_path_to_texture;
 use glium::texture::Texture2d;
 use glium::backend::glutin_backend::GlutinFacade;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 use glium::index::PrimitiveType;
 
@@ -19,6 +17,7 @@ pub struct Shape {
    pub primitive_type : Option<PrimitiveType>
 
 }
+#[allow(dead_code)]
 impl Shape {
    pub fn new() -> Shape {
       Shape {

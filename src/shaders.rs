@@ -1,9 +1,6 @@
 use std::collections::HashMap;
-//use std::boxed::RefCell;
-use std::cell::RefCell;
 use types::*;
 use glium::Program;
-use glium::backend::glutin_backend::GlutinFacade;
 
 pub struct ShaderManager {
    pub shaders : HashMap<String, Program>,

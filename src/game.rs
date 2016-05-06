@@ -4,7 +4,6 @@ use scene::*;
 use camera::Camera;
 use model::*;
 use glium::glutin::Event;
-use glium::glutin::Window;
 
 pub type MousePos = (f32, f32);
 pub type GameEvents = (Vec<Event>, Vec<MousePos>);
@@ -18,14 +17,10 @@ pub struct Game {
    pub clear_color : Color,
    pub mouse_pos : MousePos
 }
-/*
-00:39 mib_snrhte  good morning
-00:41 mib_snrhte  so to build glium, I do it like this: WindowBuilder::new().build_glium(). And to get the window I do this: WindowBuilder::new.build(). Up until this point, i didn't need to build window, but I want to use function get_inner_size_pixels()
-00:42 mib_snrhte  to me, it seems like i can use Window Builder in one of the 2 ways, but not both. What should I do?
-*/
+
 impl Game {
    pub fn new() -> Game {
-      use glium::{DisplayBuild, Surface};
+      use glium::DisplayBuild;
       use glium::glutin::WindowBuilder;
 
       let win_b = WindowBuilder::new();
@@ -44,9 +39,11 @@ impl Game {
       game.shader_manager.add_defaults(&game.display);
       game
    }
+
+#[allow(usused_variables)]
    pub fn draw(&mut self) -> GameEvents {
       use glium::Surface;
-      //self.root.draw();
+
       let init_m = self.cam.get_m();
       let mut target = self.display.draw();
       let cc = self.clear_color;
@@ -55,20 +52,16 @@ impl Game {
       for game_obj in &self.root.items {
          let obj_m = game_obj.cam.get_m();
          let final_m = mul_matrices(&obj_m, &init_m);
-         //let final_m = game_obj.cam.get_rot_m();
-
 
          if let GameObjectType::Model(ref m) = game_obj.data {
             let shape = m.shape.clone().unwrap();
 
-            //draw(&shape, "data/opengl.png");
             use glium::VertexBuffer as VB;
             let vert_buff = VB::new(&self.display,
                                     &shape.vertices)
                                    .unwrap();
 
-            use glium::index::{NoIndices, PrimitiveType};
-            //NoIndices(PrimitiveType::TrianglesList);
+            use glium::index::NoIndices;
             let indices = NoIndices(shape.primitive_type.unwrap());
             let ref shaders = self.shader_manager.shaders;
             let shader_name = m.shader_name.clone().unwrap();
@@ -111,7 +104,7 @@ impl Game {
                //println!("{:?}", e);
                use glium::glutin::ElementState::Released;
                use glium::glutin::MouseButton::Left;
-
+      
                match e {
                   //Event::MouseMoved((x, y)) => {
                   Event::MouseMoved(x, y) => {

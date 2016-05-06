@@ -44,6 +44,8 @@ pub fn mul_matrices(m1 : &Matrix, m2 : &Matrix) -> Matrix {
 pub struct ColorVertex {
    pub pos : Point, pub tex_pos : Point
 }
+
+#[allow(dead_code)]
 impl ColorVertex {
    pub fn new_coord(x1 : Coord, y1 : Coord,
                     x2 : Coord, y2 : Coord)
