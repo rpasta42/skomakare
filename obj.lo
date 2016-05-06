@@ -1,3 +1,0 @@
-(define test (shape "data/newm/2d.obj" "red"))
-(resize test 0.2 0.2)
-

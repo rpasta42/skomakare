@@ -258,7 +258,7 @@ fn main() {
             SetSize(shape_id, p) => {
                game.root.items[shape_id as usize].cam.set_size(&p);
             },
-            Exit => return,
+            Exit => break,
             //_ => panic!("unsuported command")
          }
       }

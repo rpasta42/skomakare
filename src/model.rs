@@ -11,7 +11,7 @@ use glium::index::PrimitiveType;
 
 #[derive(Debug)]
 pub enum BuiltInShape {
-   Rectangle, Triangle, Circle
+   Rectangle, Triangle, Circle, CircleFanTriangle
 }
 #[derive(Clone)]
 pub struct Shape {
@@ -45,9 +45,9 @@ impl Shape {
             shape.add_coords(0.5, 0.5, 1.0, 1.0);
             shape.add_coords(-0.5, 0.5, 0.0, 1.0);
          },
-         BuiltInShape::Circle => {
-            //so far, only have triangle strip, in lisp actually draw circle
-            /* for rot = pi/4, n = 8
+         BuiltInShape::CircleFanTriangle => {
+            /*so far, only have triangle strip, in loscript draw circle
+            for rot = pi/4, n = 8
             let x = 0.35355339;
             shape.add_coords(0.0, 0.0, 0.0, 0.0);
             shape.add_coords(-x, -x, 0.0, 0.0);
@@ -64,7 +64,7 @@ impl Shape {
             shape.add_coords(-0.5, -0.5, 0.0, 0.0);
             shape.add_coords(0.0, -0.5, 0.0, 0.0);*/
          },
-         //_ => { panic!("not implemented {:?}", shape_type); }
+         _ => { panic!("not implemented shape: {:?}", shape_type); }
       }
       shape.primitive_type = Some(PrimitiveType::TrianglesList);
       shape
@@ -75,13 +75,14 @@ impl Shape {
    {
       Shape { vertices : vertices_, primitive_type : Some(primitive_type) }
    }
-   //primitivetype::Points;
    pub fn from_obj_file(&mut self, path : &str) {
-      use utils::{read_file, s_to_f};
+      use utils::{read_file, s_to_usize, s_to_f};
 
       let data = read_file(path).unwrap();
 
-      let mut rect_verts = Vec::new();
+      let mut verts = Vec::new();
+      let mut square_indices = Vec::new();
+      let mut trig_indices = Vec::new();
 
       let lines = data.split("\n").collect::<Vec<&str>>();
       for line in lines.iter() {
@@ -93,40 +94,49 @@ impl Shape {
                println!("bad line: {}", line);
             } else {
                let v = ColorVertex {
-                  pos: [s_to_f(words[1]), s_to_f(words[2])],  //s_to_f(words[3]));
+                  pos: [s_to_f(words[1]), s_to_f(words[2])],
                   tex_pos : [0.0, 0.0]
                };
-               rect_verts.push(v);
+               verts.push(v);
+            }
+         } else if words[0] == "f" {
+            if words.len() != 5 && words.len() != 4 { println!("bad face: {}", line) }
+            else {
+               let words_rest = words.split_first().unwrap().1;
+               let wordsf = words_rest
+                              .iter()
+                              .map(|&x| s_to_usize(x) - 1)
+                              .collect::<Vec<_>>();
+
+               if words.len() == 5 {
+                  square_indices.push((wordsf[0], wordsf[1], wordsf[2], wordsf[3]));
+               } else if words.len() == 4 {
+                  trig_indices.push((wordsf[0], wordsf[1], wordsf[2]));
+               }
             }
          }
-         else { /*println!("known line type {}", words[0]);*/ }
+         else { /*println!("unknown line type {}", words[0]);*/ }
       }
-
-      for vert in rect_verts {
-         self.add(vert);
+      //println!("num triangles: {}", trig_indices.len());
+      //println!("num rectangles: {}", square_indices.len());
+      for index in trig_indices {
+         let (p1, p2, p3) = index;
+         let (v1, v2, v3) = (verts[p1], verts[p2], verts[p3]);
+         self.add(v1);
+         self.add(v2);
+         self.add(v3);
       }
-      /*let mut rect_ctr = 0;
-      let mut rect = Vec::new();
-      for vert in rect_verts {
-         rect.push(vert);
-         rect_ctr += 1;
-         if rect_ctr == 4 {
-            self.add(rect[0]);
-            self.add(rect[1]);
-            self.add(rect[2]);
-            self.add(rect[0]);
-            self.add(rect[1]);
-            self.add(rect[3]);
-            rect = Vec::new();
-            rect_ctr = 0;
-         }
-      }*/
-
-      //self.primitive_type = Some(PrimitiveType::Points);
-      //self.primitive_type = Some(PrimitiveType::TriangleFan);
-      //self.primitive_type = Some(PrimitiveType::TrianglesList);
-      self.primitive_type = Some(PrimitiveType::LineStripAdjacency);
-
+      for index in square_indices {
+         let (p1, p2, p3, p4) = index;
+         let (v1, v2, v3, v4) = (verts[p1], verts[p2], verts[p3], verts[p4]);
+         self.add(v1);
+         self.add(v2);
+         self.add(v3);
+         self.add(v1);
+         self.add(v4);
+         self.add(v3);
+      }
+      self.primitive_type = Some(PrimitiveType::TrianglesList);
    }
    pub fn add(&mut self, v : ColorVertex) {
       self.vertices.push(v);

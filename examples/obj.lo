@@ -1,0 +1,4 @@
+;(l "obj.lo")
+(define test (shape "data/monk/monk.obj" blue))
+(resize test 0.3 0.3)
+

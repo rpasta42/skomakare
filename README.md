@@ -1,9 +1,9 @@
 
 2D Graphics environment with a custom scheme-like scripting language called [lambda-oxide](https://github.com/KostyaKow/LambdaOxide). The main aim of the project is to teach lisp to kids and introduce people to progamming. Skomakare is written in rust and uses glium.
 
-[Example Tic Tac Toe game](https://github.com/KostyaKow/skomakare/blob/master/tictactoe.lo)
+[Example Tic Tac Toe game](https://github.com/KostyaKow/skomakare/blob/master/examples/tictactoe.lo)
 
-[Drawing circle from triangles](https://github.com/KostyaKow/skomakare/blob/master/circle.lo)
+[Drawing circle from triangles](https://github.com/KostyaKow/skomakare/blob/master/examples/circle.lo)
 
 
 ```scheme
@@ -12,7 +12,7 @@ $ cargo run
 **>(l "tictactoe.lo")
 **>(define my-triangle (triangle red))
 **>(move my-triangle 0.3 0.3)
-**>(define my-square (square "data/opengl.png"))
+**>(define my-square (square "resources/opengl.png"))
 **>(define rotate-square
       (lambda (i)
          (do (sleep 0.05)
@@ -53,6 +53,8 @@ What works, what doesn't:
 - [ ] misc
    - [ ] lisp shaders
    - [ ] check out stuff from [logo](https://en.wikipedia.org/wiki/Logo_%28programming_language%29)
+- [ ] custom shapes with points, lines or trianges from loscript
+   - [ ] PrimitiveType::Points 
 
 old todo:
 

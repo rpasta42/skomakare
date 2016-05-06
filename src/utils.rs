@@ -14,6 +14,9 @@ pub fn char_at(s : &str, n : usize) -> Option<char> {
 pub fn s_to_f(s : &str) -> f32 {
    s.parse::<f32>().unwrap()
 }
+pub fn s_to_usize(s : &str) -> usize {
+   s.parse::<usize>().unwrap()
+}
 /*
 fn display_file(path : &str) {
    let data = read_file(path).unwrap();
