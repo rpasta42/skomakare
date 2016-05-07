@@ -17,25 +17,17 @@
 
 (define test-loop (lambda () (do (print "got here ok") (sleep 2))))
 
-;(define move-car (lambda (distance) (do
-;   (translate-car-group distance)
-;   (rotate-car-wheels distance))))
-;
-;(define translate-car-group (lambda (distance) (do
-;   (move car1 distance 0)
-;   (move wheel1 distance 0)
-;   (move wheel2 distance 0))))
-;
-;(define rotate-car-wheels (lambda (distance) (do
-;   (define rot-angle-rad (* pi distance 5))
-;   (rotate wheel1 rot-angle-rad)
-;   (rotate wheel2 rot-angle-rad))))
-
 (define move-car (lambda (distance) (do
+   (translate-car-group distance)
+   (rotate-car-wheels distance))))
+
+(define translate-car-group (lambda (distance) (do
    (move car1 distance 0)
    (move wheel1 distance 0)
-   (move wheel2 distance 0)
-   (define rot-angle-rad (* pi distance 5))
+   (move wheel2 distance 0))))
+
+(define rotate-car-wheels (lambda (distance) (do
+   (define rot-angle-rad (- 0 (* pi distance 5)))
    (rotate wheel1 rot-angle-rad)
    (rotate wheel2 rot-angle-rad))))
 
@@ -68,22 +60,13 @@
             (if (= key "w")
                (+ c1-speed 0.2)
                c1-speed))))
-   (print speed-unlimited)
    (define speed-limited
       (if (> speed-unlimited 15)
          15
          (if (< speed-unlimited (- 0 15))
             (- 0 15)
             speed-unlimited)))
-;   (move car1 (- 0 (/ speed-limited 100.0)) 0)
-;   (move-car (- 0 (/ speed-limited 100.0)))
-   (define distance (- 0 (/ speed-limited 100.0)))
-   (move car1 distance 0)
-   (move wheel1 distance 0)
-   (move wheel2 distance 0)
-   (define rot-angle-rad (* pi distance 5))
-   (rotate wheel1 rot-angle-rad)
-   (rotate wheel2 rot-angle-rad)
+   (move-car (- 0 (/ speed-limited 100.0)))
    (run-helper speed-limited 0 0 0 (- iter 1))))))
 
 (define run (lambda (num) (run-helper 0 0 0 0 num)))
