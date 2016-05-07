@@ -219,7 +219,8 @@ fn main() {
                   shape_path => {
                      //panic!("unsuported shape")
                      let mut s = Shape::new();
-                     s.from_obj_file(shape_path);
+                     //s.from_obj_file(shape_path);
+                     s.from_obj_file_uv_texture(shape_path);
                      s
                   }
                };

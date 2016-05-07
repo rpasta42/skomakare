@@ -1,0 +1,25 @@
+to lookup
+   vertex groups https://www.blender.org/manual/modeling/meshes/vertex_groups/vertex_groups.html
+background image     bottom of Object Properties
+
+
+Numpad 5 -> Orthogonal and Perspective
+n        -> Object Properties
+a        -> toogle selection of vertices
+f        -> select vertices and press f to create a face
+b        -> select multiple vertices
+shift A  -> add mesh
+S        -> size
+s z      -> height
+e        -> extrude
+g        -> grab
+r        -> rotate
+triangulate          select all vertices in edit mode and press Ctrl+T
+background image     bottom of Object Properties
+
+uv mapping https://en.wikibooks.org/wiki/Blender_3D:_Noob_to_Pro/UV_Map_Basics
+triangulation http://blender.stackexchange.com/questions/19253/how-to-make-all-polygons-into-triangles
+adding textures http://www.instructables.com/id/How-to-add-a-texture-in-Blender/step5/Texture/
+create face out of vertices https://wiki.blender.org/index.php/Doc:2.4/Manual/Modeling/Meshes/Editing/Basics/Creating_Faces_and_Edges
+background image https://en.wikibooks.org/wiki/Blender_3D:_Noob_to_Pro/Background_Images
+

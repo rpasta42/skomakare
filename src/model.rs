@@ -25,6 +25,18 @@ impl Shape {
          primitive_type : None
       }
    }
+   pub fn add(&mut self, v : ColorVertex) {
+      self.vertices.push(v);
+   }
+   pub fn add_coords(&mut self, x1 : Coord, y1 : Coord,
+                     x2 : Coord, y2 : Coord)
+   {
+      self.vertices.push(ColorVertex::new(x1, y1, x2, y2));
+   }
+   pub fn print(&self) {
+      for vert in &*self.vertices { vert.print(); }
+   }
+
    pub fn new_builtin(shape_type : BuiltInShape) -> Shape {
       let mut shape = Shape::new(); //TODO
       match shape_type {
@@ -137,16 +149,96 @@ impl Shape {
       }
       self.primitive_type = Some(PrimitiveType::TrianglesList);
    }
-   pub fn add(&mut self, v : ColorVertex) {
-      self.vertices.push(v);
-   }
-   pub fn add_coords(&mut self, x1 : Coord, y1 : Coord,
-                     x2 : Coord, y2 : Coord)
-   {
-      self.vertices.push(ColorVertex::new(x1, y1, x2, y2));
-   }
-   pub fn print(&self) {
-      for vert in &*self.vertices { vert.print(); }
+   pub fn from_obj_file_uv_texture(&mut self, path : &str) {
+      use utils::{read_file, s_to_usize, s_to_f};
+
+      let data = read_file(path).unwrap();
+
+      let mut verts = Vec::new();
+      let mut face_indices = Vec::new(); //f vertex_i/face_i v_i/f_i v_i/fi
+      let mut vt = Vec::new();
+
+      let lines = data.split("\n").collect::<Vec<&str>>();
+      for line in lines.iter() {
+         let words = line.split(" ").collect::<Vec<&str>>();
+
+         //TODO: check words >= 1
+         match words[0] {
+            "#" => continue,
+            "vt" => {
+               if words.len() != 3 { println!("bad number of args to vt: {}", line); }
+               vt.push([s_to_f(words[1]), s_to_f(words[2])]);
+            },
+            "v" => {
+               if words.len() != 4 {
+                  println!("bad line: {}", line);
+               } else {
+                  /*let v = ColorVertex {
+                     pos: [s_to_f(words[1]), s_to_f(words[2])],
+                     tex_pos : [0.0, 0.0]
+                  };
+                  verts.push(v);*/
+                  verts.push([s_to_f(words[1]), s_to_f(words[2])]);
+               }
+            },
+            "f" => {
+               let err_msg = "need to triangulate model before exporting to obj";
+               if words.len() != 4 { println!("bad face: {}; {}", line, err_msg); }
+               else {
+
+                  let words_rest = words.split_first().unwrap().1;
+                  let ti_vi = words_rest
+                                 .iter()
+                                 .map(|&x| x.split("/")
+                                            .map(|y| s_to_usize(y) - 1).collect::<Vec<_>>())
+                                 .collect::<Vec<_>>();
+                  //vi = index in vt (vertex texture coords)
+                  //fi = index in verts (vertex ie coords in screen)
+                  //[[vi,fi], [vi,fi], [vi,fi]]
+                  //face_indices.push(ti_vi);
+                  let v1 = (ti_vi[0][0], ti_vi[0][1]);
+                  let v2 = (ti_vi[1][0], ti_vi[1][1]);
+                  let v3 = (ti_vi[2][0], ti_vi[2][1]);
+                  face_indices.push((v1, v2, v3));
+                  //face_indices.push((wordsf[0], wordsf[1], wordsf[2]));
+                  //trig_indices.push((wordsf[0], wordsf[1], wordsf[2]));
+               }
+            },
+            _ => {}
+         }
+      }
+      for (i1, i2, i3) in face_indices {
+         let (vert_in1, tex_in1) = i1;
+         let (vert_in2, tex_in2) = i2;
+         let (vert_in3, tex_in3) = i3;
+
+         let vert1 = ColorVertex {
+            pos: verts[vert_in1],
+            tex_pos : vt[tex_in1]
+         };
+         self.add(vert1);
+
+         let vert2 = ColorVertex {
+            pos: verts[vert_in2],
+            tex_pos : vt[tex_in2]
+         };
+         self.add(vert2);
+
+         let vert3 = ColorVertex {
+            pos: verts[vert_in3],
+            tex_pos : vt[tex_in3]
+         };
+         self.add(vert3);
+
+      }
+      /*for index in trig_indices {
+         let (p1, p2, p3) = index;
+         let (v1, v2, v3) = (verts[p1], verts[p2], verts[p3]);
+         self.add(v1);
+         self.add(v2);
+         self.add(v3);
+      }*/
+      self.primitive_type = Some(PrimitiveType::TrianglesList);
    }
 }
 

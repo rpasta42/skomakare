@@ -1,0 +1,40 @@
+
+; comment. all text that bigs with ; gets ignored
+
+
+;a box looks like this: (box-name first-thing-to-put-in-box second-thing third)
+
+(+ 3 5 5 2 1)
+
+(* 10 10)
+
+(* 2 (+ 3 5))
+;(+ 3 5) = 8
+;(* 2 8)
+;16
+
+;(- 10 (+ 3 5))
+;(- 10 8)
+;2
+
+;text always goes in double quotes " "
+"blah blah"
+
+;variables. you can store values in a variable
+;(define variable-name variable-value)
+(define tony-age 7)
+(define nick-age 3)
+
+(define tony-and-nick-age (+ tony-age nick-age))
+
+(print (+ "nick and tony's age together: " tony-and-nick-age))
+
+(if (> tony-age nick-age)
+   (print "tony-is-bigger")
+   (print "tony-is-smaller"))
+
+;to make a new box, you use the word lambda
+(define new-box (lambda (a b) (+ a b)))
+
+;name the box zzbox box that takes a b c, and outputs a + b - c
+(define zzbox (lambda (a b c) (+ a (- b c))))

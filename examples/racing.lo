@@ -1,0 +1,46 @@
+
+(define car1 (shape "car-uv.obj" "car.png"))
+(resize car1 0.06 0.06)
+(move car1 0.5 0.2)
+
+;(define car2 (shape "car.obj" "resources/opengl.png"))
+(define car2 (shape "car-uv.obj" "car.png"))
+(resize car2 0.06 0.06)
+(move car2 0.5 -0.2)
+
+(define test-loop (lambda () (do (print "got here ok") (sleep 2))))
+
+(define get-key (lambda () (do
+   (define events (check_events))
+   (if (null? events)
+      nil
+      (if (= (car events) "key")
+         (cdr events)
+         nil)))))
+
+
+(define run-helper (lambda (c1-speed c1-loc c2-speed c2-loc iter) (if (= iter 0) "done" (do
+   (sleep 0.02)
+   (define key (get-key))
+   (define speed-unlimited
+      (if (null? key)
+         (- c1-speed 0.02)
+         (if (= key "s")
+;            (- c1-speed 0.4)
+            (- c1-speed (/ c1-speed 3.0))
+            (if (= key "w")
+               (+ c1-speed 0.2)
+               c1-speed))))
+   (define speed-limited
+      (if (> speed-unlimited 15)
+         15
+         (if (< speed-unlimited 0)
+            0
+            speed-unlimited)))
+   (move car1 (- 0 (/ speed-limited 100.0)) 0)
+   (run-helper speed-limited 0 0 0 (- iter 1))))))
+
+(define run (lambda (num) (run-helper 0 0 0 0 num)))
+(run 10000)
+
+
