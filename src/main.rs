@@ -204,8 +204,14 @@ fn main() {
 
    //engine_main();
    loop {
-      let script_cmd_res = cmd_r.try_recv();
-      if let Ok(script_cmd) = script_cmd_res {
+      let mut cmds = Vec::new();
+      //let script_cmd_res = cmd_r.try_recv();
+      while let Ok(cmd) = cmd_r.try_recv() {
+         cmds.push(cmd);
+      }
+
+      //if let Ok(script_cmd) = script_cmd_res {
+      for script_cmd in cmds {
          use GameCmd::*;
 
          match script_cmd {

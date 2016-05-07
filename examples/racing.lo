@@ -57,7 +57,7 @@
 (define abs (lambda (x) (if (> x 0) x (- 0 x))))
 
 (define run-helper (lambda (c1-speed c1-loc c2-speed c2-loc iter) (if (= iter 0) "done" (do
-   (sleep 0.01)
+   (sleep 0.02)
    (define key (get-key))
    (define speed-unlimited
       (if (null? key)
@@ -68,21 +68,22 @@
             (if (= key "w")
                (+ c1-speed 0.2)
                c1-speed))))
+   (print speed-unlimited)
    (define speed-limited
       (if (> speed-unlimited 15)
          15
          (if (< speed-unlimited (- 0 15))
             (- 0 15)
             speed-unlimited)))
-   (move car1 (- 0 (/ speed-limited 100.0)) 0)
+;   (move car1 (- 0 (/ speed-limited 100.0)) 0)
 ;   (move-car (- 0 (/ speed-limited 100.0)))
-;   (define distance (- 0 (/ speed-limited 100.0)))
-;   (move car1 distance 0)
-;   (move wheel1 distance 0)
-;   (move wheel2 distance 0)
-;   (define rot-angle-rad (* pi distance 5))
-;   (rotate wheel1 rot-angle-rad)
-;   (rotate wheel2 rot-angle-rad)
+   (define distance (- 0 (/ speed-limited 100.0)))
+   (move car1 distance 0)
+   (move wheel1 distance 0)
+   (move wheel2 distance 0)
+   (define rot-angle-rad (* pi distance 5))
+   (rotate wheel1 rot-angle-rad)
+   (rotate wheel2 rot-angle-rad)
    (run-helper speed-limited 0 0 0 (- iter 1))))))
 
 (define run (lambda (num) (run-helper 0 0 0 0 num)))
