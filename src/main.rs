@@ -220,7 +220,7 @@ fn main() {
 
                let shape = match &*shape_type {
                   "triangle" => Shape::new_builtin(BuiltInShape::Triangle),
-                  "circle" => Shape::new_builtin(BuiltInShape::Circle),
+                  "circle" => Shape::new_builtin(BuiltInShape::CircleFanTriangle),
                   "square" => Shape::new_builtin(BuiltInShape::Rectangle),
                   shape_path => {
                      //panic!("unsuported shape")
