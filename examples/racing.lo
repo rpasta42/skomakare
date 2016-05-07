@@ -18,24 +18,26 @@
          (cdr events)
          nil)))))
 
+;TODO: move to standard library
+(define abs (lambda (x) (if (> x 0) x (- 0 x))))
 
 (define run-helper (lambda (c1-speed c1-loc c2-speed c2-loc iter) (if (= iter 0) "done" (do
    (sleep 0.02)
    (define key (get-key))
    (define speed-unlimited
       (if (null? key)
-         (- c1-speed 0.02)
+         ((if (< (abs c1-speed) 0.03) (lambda (x y) 0) (if (> c1-speed 0) - +)) c1-speed 0.02)
          (if (= key "s")
-;            (- c1-speed 0.4)
-            (- c1-speed (/ c1-speed 3.0))
+            (- c1-speed 0.2)
+;            (- c1-speed (/ c1-speed 3.0))
             (if (= key "w")
                (+ c1-speed 0.2)
                c1-speed))))
    (define speed-limited
       (if (> speed-unlimited 15)
          15
-         (if (< speed-unlimited 0)
-            0
+         (if (< speed-unlimited (- 0 15))
+            (- 0 15)
             speed-unlimited)))
    (move car1 (- 0 (/ speed-limited 100.0)) 0)
    (run-helper speed-limited 0 0 0 (- iter 1))))))
