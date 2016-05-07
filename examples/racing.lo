@@ -3,12 +3,47 @@
 (resize car1 0.06 0.06)
 (move car1 0.5 0.2)
 
+(define wheel1 (shape "triangle" "red"))
+(define wheel2 (shape "triangle" "blue"))
+
+(setup-wheels)
+
+;(define setup-wheels (lambda () (do
+   (resize wheel1 0.09 0.09)
+   (resize wheel2 0.09 0.09)
+   (move wheel1 0.32 0.1)
+   (move wheel2 0.65 0.1)
+;)))
+
+(define test-loop (lambda () (do (print "got here ok") (sleep 2))))
+
+;(define move-car (lambda (distance) (do
+;   (translate-car-group distance)
+;   (rotate-car-wheels distance))))
+;
+;(define translate-car-group (lambda (distance) (do
+;   (move car1 distance 0)
+;   (move wheel1 distance 0)
+;   (move wheel2 distance 0))))
+;
+;(define rotate-car-wheels (lambda (distance) (do
+;   (define rot-angle-rad (* pi distance 5))
+;   (rotate wheel1 rot-angle-rad)
+;   (rotate wheel2 rot-angle-rad))))
+
+(define move-car (lambda (distance) (do
+   (move car1 distance 0)
+   (move wheel1 distance 0)
+   (move wheel2 distance 0)
+   (define rot-angle-rad (* pi distance 5))
+   (rotate wheel1 rot-angle-rad)
+   (rotate wheel2 rot-angle-rad))))
+
 ;(define car2 (shape "car.obj" "resources/opengl.png"))
 (define car2 (shape "car-uv.obj" "car.png"))
 (resize car2 0.06 0.06)
 (move car2 0.5 -0.2)
 
-(define test-loop (lambda () (do (print "got here ok") (sleep 2))))
 
 (define get-key (lambda () (do
    (define events (check_events))
@@ -22,7 +57,7 @@
 (define abs (lambda (x) (if (> x 0) x (- 0 x))))
 
 (define run-helper (lambda (c1-speed c1-loc c2-speed c2-loc iter) (if (= iter 0) "done" (do
-   (sleep 0.02)
+   (sleep 0.01)
    (define key (get-key))
    (define speed-unlimited
       (if (null? key)
@@ -40,6 +75,14 @@
             (- 0 15)
             speed-unlimited)))
    (move car1 (- 0 (/ speed-limited 100.0)) 0)
+;   (move-car (- 0 (/ speed-limited 100.0)))
+;   (define distance (- 0 (/ speed-limited 100.0)))
+;   (move car1 distance 0)
+;   (move wheel1 distance 0)
+;   (move wheel2 distance 0)
+;   (define rot-angle-rad (* pi distance 5))
+;   (rotate wheel1 rot-angle-rad)
+;   (rotate wheel2 rot-angle-rad)
    (run-helper speed-limited 0 0 0 (- iter 1))))))
 
 (define run (lambda (num) (run-helper 0 0 0 0 num)))
