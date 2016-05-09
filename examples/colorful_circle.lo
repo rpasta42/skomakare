@@ -1,27 +1,22 @@
-
-(define z (c red))
-(rotate z 0.09)
+;cargo run
+;(l "examples/colorful_circle.lo")
 
 (define triangles nil)
 
-(define f (lambda (n rot colors)
+(define draw (lambda (n rot colors)
    (if (= n 32) "done"
-      (do (define shape (c (car colors)))
-          (define triangles (cons shape triangles))
-          (define new_rot (+ rot (/ pi 4 2 2)))
-          (print (+ "rotating " n  " times. deg: "
-                    (- 0 new_rot) " shape: " shape))
-          (rotate shape (- 0 new_rot))
-          (f (+ n 1) new_rot (cdr colors))))))
+      (do (define strip (circle-fan (car colors)))
+          (define triangles (cons strip triangles))
+          (define new-rot (+ rot (/ pi 4 2 2)))
+          (print (+ "rotating " n " times. deg: "
+                 (- 0 new-rot) " shape: " strip))
+          (rotate strip (- 0 new-rot))
+          (draw (+ n 1) new-rot (cdr colors))))))
 
 (define rgb (cons red (cons green (cons blue nil))))
-
-(define repeat (lambda (n lst) (if (= n 1) lst (append lst (repeat (- n 1) lst)))))
 (define colors (repeat 20 rgb))
 
-(f 0 0 colors)
-(define triangles (cons 1 nil))
-(print (length triangles))
+(draw 0 0 colors)
 
 (sleep 2)
 (exit)

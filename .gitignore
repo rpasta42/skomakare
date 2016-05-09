@@ -2,10 +2,4 @@
 *.swp
 Cargo.lock
 target
-data/
-misc/
-
-#TODO: tmp until cleanup and separation of examples into different repo
-car-uv.obj
-car.jpg
-car.png
+examples-data-repo

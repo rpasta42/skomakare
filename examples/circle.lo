@@ -1,24 +1,16 @@
 ;$ cargo run
-;**> (l "circle.lo")
+;**> (l "examples/circle.lo")
 
 (define circle (lambda (color) (do
    (define circle-helper (lambda (n rot triangles)
       (if (= n 32) triangles
-         (do (define shape (circle-fan color))
+         (do (define strip (triangle-fan color))
              (define new_rot (+ rot (/ pi 4 2 2)))
-;            (print (+ "rotating " n  " times. deg: "
-;                (- 0 new_rot) " shape: " shape))
-             (rotate shape (- 0 new_rot))
-             (circle-helper (+ n 1) new_rot (cons shape triangles))))))
+            (print (+ "rotating " n  " times. deg: "
+                   (- 0 new_rot) " triangle #: " strip))
+             (rotate strip (- 0 new_rot))
+             (circle-helper (+ n 1) new_rot (cons strip triangles))))))
    (circle-helper 0 0 nil))))
-
-(define my-circle (circle-fan "red"))
-
-;(define rgb (cons red (cons green (cons blue nil))))
-;(define repeat (lambda (n lst) (if (= n 1) lst (append lst (repeat (- n 1) lst)))))
-;(define colors (repeat 20 rgb))
-
-;(f 0 0 colors nil)
 
 (define c1 (circle red))
 (define c2 (circle blue))

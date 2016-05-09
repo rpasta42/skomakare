@@ -1,3 +1,5 @@
+;standard loscript library with helper stuff for skomakare API
+
 (define pi 3.14159265359)
 
 (define red "red")
@@ -6,4 +8,6 @@
 
 (define triangle (lambda (color) (shape "triangle" color)))
 (define square (lambda (color) (shape "square" color)))
-(define circle-fan (lambda (color) (shape "circle" color)))
+(define triangle-fan (lambda (color) (shape "triangle-fan" color)))
+
+(define test-loop (lambda () (do (print "got here ok") (sleep 2))))

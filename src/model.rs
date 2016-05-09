@@ -9,7 +9,7 @@ use glium::index::PrimitiveType;
 
 #[derive(Debug)]
 pub enum BuiltInShape {
-   Rectangle, Triangle, Circle, CircleFanTriangle
+   Rectangle, Triangle, Circle, TriangleFan
 }
 #[derive(Clone)]
 pub struct Shape {
@@ -56,7 +56,7 @@ impl Shape {
             shape.add_coords(0.5, 0.5, 1.0, 1.0);
             shape.add_coords(-0.5, 0.5, 0.0, 1.0);
          },
-         BuiltInShape::CircleFanTriangle => {
+         BuiltInShape::TriangleFan => {
             /*so far, only have triangle strip, in loscript draw circle
             for rot = pi/4, n = 8
             let x = 0.35355339;

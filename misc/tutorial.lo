@@ -1,0 +1,50 @@
+
+;this is a comment. it begins with ;
+;As of now, comments have to start at beginning of line
+
+;to load a file, use (l "filename.lo")
+(l "file.lo")
+
+;basic building block is a expression in parenthesis
+;first item in parenthesis is a box name
+;the rest of stuff inside parenthesis are arguments (or stuff you put inside the box)
+(+ 3 5)
+(* 2 10)
+(+ 3 (- 5 10) 30)
+
+;stuff inside " " is a string, like text or something
+;you can have integer numbers, like 1 or 2
+;or you can have floating point numbers like 1.5 3.2
+
+;to make a new variable, you can use define
+(define x 100)
+;prints 100
+(print x)
+
+;function (arg1 arg2) { return arg1^2 + arg2^2; }
+;we can make our own functions (boxes)
+(lambda (argument1 argument2)
+   (+ (* argumen1 argument1) (* argument2 argument2)))
+
+;(define f (lambda (arg1) (+ arg1 10)))
+
+;(triangle red)
+;(triangle "path_to_img/pic.png")
+
+(square blue)
+
+;(resize obj x-scale y-scale)
+;(move obj x y)
+;(rotate obj radians)
+
+180 = 3.14
+180/3.14 = 60
+
+;make new function rotate2 which takes degrees
+(define deg-to-rad (lambda (x) (* x (/ pi 180))))
+
+
+(define rotate2 (lambda (obj radians) (rotate obj (deg-to-rad radians))))
+
+
+

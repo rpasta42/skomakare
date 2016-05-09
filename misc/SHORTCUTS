@@ -1,0 +1,4 @@
+(l "examples/racing.lo")
+(l "examples/circle.lo")
+
+(define myshape (shape "car-uv.obj" "car.png"))

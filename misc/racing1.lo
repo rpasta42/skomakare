@@ -1,0 +1,15 @@
+
+(define car1 (shape "car.obj" blue))
+(resize car1 0.06 0.06)
+(move car1 0.5 0.2)
+
+
+(define rotator (lambda (n)
+   (if (= n 0)
+      "done"
+      (do (print (+ "the number equal: " n))
+         (rotate car1 1)
+         (sleep 1)
+         (rotator (- n 1))))))
+
+(rotator 19999999999994)
