@@ -3,6 +3,10 @@ to lookup
 background image     bottom of Object Properties
 
 
+triangulate modifier (editing without triangulating)
+   select object, click on wrench of right side, add modifier
+   
+
 Numpad 5 -> Orthogonal and Perspective
 n        -> Object Properties
 a        -> toogle selection of vertices
