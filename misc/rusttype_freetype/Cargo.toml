@@ -1,0 +1,8 @@
+[package]
+name = "font-test"
+version = "0.0.0"
+
+
+[dependencies]
+rusttype = "0.2.0"
+

@@ -62,4 +62,6 @@ old todo:
    - [ ] write README.md
    - [ ] [document Lisp API](https://github.com/KostyaKow/skomakare/blob/master/src/main.rs#L53)
    - [ ] Add pos, rot, scale
+   - [ ] https://doc.rust-lang.org/book/iterators.html
+
 

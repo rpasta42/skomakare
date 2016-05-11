@@ -1,6 +1,6 @@
 use types::*;
 use shaders::*;
-use utils::img_path_to_texture;
+use utils::{img_path_to_texture, text_to_texture};
 use glium::texture::Texture2d;
 use glium::backend::glutin_backend::GlutinFacade;
 
@@ -254,7 +254,8 @@ pub struct Model {
    pub color : Option<Color>,
    pub img_path : Option<String>,
    pub texture : Option<Texture2d>,
-   pub shader_name : Option<String>
+   pub shader_name : Option<String>,
+   pub text : Option<String>
 }
 
 impl Model {
@@ -262,8 +263,12 @@ impl Model {
       Model {
          shape : None, color : None, img_path : None,
          texture : None, shader_name : None,
-         texture_type : TextureType::None
+         texture_type : TextureType::None,
+         text : None
       }
+   }
+   pub fn text(&mut self, text_ : String) -> &mut Model {
+      self.text = Some(text_); self
    }
    pub fn shape(&mut self, shape_ : Shape) -> &mut Model {
       self.shape = Some(shape_); self
@@ -303,8 +308,12 @@ impl Model {
          texture_type = TextureType::Image;
          self.shader_name = Some("texture".to_string());
          Some(img_path_to_texture(img_path, display))
+      } else if let Some(t) = self.text.clone() { //todo: fix texture type and stuff
+         texture_type = TextureType::Image;
+         self.shader_name = Some("texture".to_string());
+         Some(text_to_texture(t, display))
       } else { None };
-
+      
       if texture_type == TextureType::None {
          panic!("Model needs to either have color or img_path");
       }
@@ -313,7 +322,8 @@ impl Model {
          shape: self.shape.clone(), color: self.color,
          img_path: self.img_path.clone(), texture: texture,
          shader_name: self.shader_name.clone(),
-         texture_type: texture_type
+         texture_type: texture_type,
+         text: self.text.clone()
       }
    }
    //fn draw() {}
