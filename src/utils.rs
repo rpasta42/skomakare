@@ -86,7 +86,8 @@ pub fn read_bin_file(path_str : &str, mut ret : &mut Vec<u8>) {
 pub fn text_to_texture(text : String, display : &Display) -> Texture2d
 {
    let font_path = "/usr/share/fonts/truetype/msttcorefonts/comic.ttf";
-   let (pixels, height, width) = raster_text(&*text, font_path);
+   /*let (pixels, height, width) = raster_text(&*text, font_path);
+
    let mut imgbuf = image::ImageBuffer::new(width as u32, height as u32);
    for (x_, y_, pixel) in imgbuf.enumerate_pixels_mut() {
       //let x = x_ as usize;
@@ -99,10 +100,15 @@ pub fn text_to_texture(text : String, display : &Display) -> Texture2d
    println!("width: {}, height: {}", width, height);
    let raw_image = RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_d);
    Texture2d::new(display, raw_image).unwrap()
+   //RawImage2d::from_raw(pixels, height, width);*/
+   let pixels = raster_text(&*text, font_path);
+   Texture2d::new(display, pixels).unwrap()
 }
 
 // (pixel_data, pixel_height, width)
-fn raster_text(text : &str, font_path : &str) -> (Vec<f32>, usize, usize) {
+fn raster_text(text : &str, font_path : &str) -> Vec<Vec<u8>>
+//-> (Vec<f32>, usize, usize)
+{
    use rusttype::{FontCollection, Scale, point, PositionedGlyph};
    use std::io::Write;
 
@@ -139,7 +145,7 @@ fn raster_text(text : &str, font_path : &str) -> (Vec<f32>, usize, usize) {
    let mapping = b"@%#x+=:-. "; // The approximation of greyscale
    let mapping_scale = (mapping.len()-1) as f32;
    for g in glyphs {
-      if let Some(bb) = g.pixel_bounding_box() {
+      /*if let Some(bb) = g.pixel_bounding_box() {
          g.draw(|x, y, v| {
             // v should be in the range 0.0 to 1.0
             let i = (v*mapping_scale + 0.5) as usize;
@@ -157,7 +163,19 @@ fn raster_text(text : &str, font_path : &str) -> (Vec<f32>, usize, usize) {
 
             }
          })
+      }*/
+      let bitmap = g.bitmap();
+      let width = bitmap.width() as usize;
+      let height = bitmap.rows() as usize();
+      let data = bitmap.buffer();
+      let mut vec_tex : Vec<Vec<u8>> = Vec::with_capacity(height); //TODO: Convert &[u8] into a Vec<Vec<u8>>
+      for y in 0..height {
+         vec_tex.push(Vec::with_capacity(width));
+         for x in 0..width {
+            vec_tex[y].push(data[y*width + x]);
+         }
       }
+      return vec_tex;
    }
 
    // Print it out
