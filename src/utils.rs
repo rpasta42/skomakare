@@ -169,7 +169,7 @@ fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
 
    //KK in opengl, 0 to 1 color
    // Rasterise directly into ASCII art.
-   let mut pixel_data = vec![0.5; width * pixel_height];
+   let mut pixel_data = vec![0.0; width * pixel_height];
    //let mut pixel_data = vec![b'@'; width * pixel_height];
 
    let mapping = b"@%#x+=:-. "; // The approximation of greyscale
