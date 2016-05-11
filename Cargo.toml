@@ -4,6 +4,7 @@ version = "0.0.3"
 authors = ["Kostyantyn Kovalskyy <kostelkow@gmail.com>"]
 
 [dependencies]
+rusttype = "0.2.0"
 glium = "0.14.0"
 image = "*"
 LambdaOxide = { git = "https://github.com/KostyaKow/LambdaOxide.git", version = "0.1.7" }
