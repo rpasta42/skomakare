@@ -77,6 +77,39 @@ pub fn read_bin_file(path_str : &str, mut ret : &mut Vec<u8>) {
    file.read_to_end(&mut ret).unwrap();
 }
 
+
+/*pub fn text_to_texture_freetype(text : String, display : &Display) -> Texture2d
+{
+   // FREETYPE TEMP TEST CODE
+   let font = "/usr/share/fonts/truetype/msttcorefonts/comic.ttf";
+
+   let character = 'A' as usize;
+   let library = freetype::Library::init().unwrap();
+   let face = library.new_face(font, 0).unwrap();
+
+
+   face.set_char_size(40 * 64, 0, 50, 0).unwrap();
+   face.load_char(character, freetype::face::RENDER).unwrap();
+   let glyph = face.glyph();
+   // TODO(zac): Move this into a separate function.
+   let bitmap = glyph.bitmap();
+   let width = bitmap.width() as usize;
+   let height = bitmap.rows() as usize;
+   let data = bitmap.buffer();
+
+
+   let mut vec_tex: Vec<Vec<u8>> = Vec::with_capacity(height); // TODO: Convert &[u8] into a Vec<Vec<u8>>.
+   for y in 0..height {
+      vec_tex.push(Vec::with_capacity(width));
+      for x in 0..width {
+         vec_tex[0].push(data[y*width + x]);
+      }
+   }
+
+   Texture2d::new(&self.display, vec_tex).unwrap();
+}*/
+
+
 //https://botbot.me/mozilla/rust-gamedev/2015-07-26/?page=1
 //https://tomaka.github.io/glium/glium/texture/struct.RawImage2d.html
 //https://tomaka.github.io/glium/glium/texture/trait.Texture2dDataSource.html
@@ -86,9 +119,8 @@ pub fn read_bin_file(path_str : &str, mut ret : &mut Vec<u8>) {
 pub fn text_to_texture(text : String, display : &Display) -> Texture2d
 {
    let font_path = "/usr/share/fonts/truetype/msttcorefonts/comic.ttf";
-   /*let (pixels, height, width) = raster_text(&*text, font_path);
-
-   let mut imgbuf = image::ImageBuffer::new(width as u32, height as u32);
+   let (pixels, height, width) = raster_text(&*text, font_path);
+   /*let mut imgbuf = image::ImageBuffer::new(width as u32, height as u32);
    for (x_, y_, pixel) in imgbuf.enumerate_pixels_mut() {
       //let x = x_ as usize;
       //let y = y_ as f32;
@@ -99,15 +131,13 @@ pub fn text_to_texture(text : String, display : &Display) -> Texture2d
    println!("dimenx: {} dimeny: {}", image_d.0, image_d.1);
    println!("width: {}, height: {}", width, height);
    let raw_image = RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_d);
-   Texture2d::new(display, raw_image).unwrap()
-   //RawImage2d::from_raw(pixels, height, width);*/
-   let pixels = raster_text(&*text, font_path);
+   Texture2d::new(display, raw_image).unwrap()*/
    Texture2d::new(display, pixels).unwrap()
 }
 
 // (pixel_data, pixel_height, width)
-fn raster_text(text : &str, font_path : &str) -> Vec<Vec<u8>>
-//-> (Vec<f32>, usize, usize)
+fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
+-> (Vec<Vec<u8>>, usize, usize)
 {
    use rusttype::{FontCollection, Scale, point, PositionedGlyph};
    use std::io::Write;
@@ -145,7 +175,7 @@ fn raster_text(text : &str, font_path : &str) -> Vec<Vec<u8>>
    let mapping = b"@%#x+=:-. "; // The approximation of greyscale
    let mapping_scale = (mapping.len()-1) as f32;
    for g in glyphs {
-      /*if let Some(bb) = g.pixel_bounding_box() {
+      if let Some(bb) = g.pixel_bounding_box() {
          g.draw(|x, y, v| {
             // v should be in the range 0.0 to 1.0
             let i = (v*mapping_scale + 0.5) as usize;
@@ -158,24 +188,12 @@ fn raster_text(text : &str, font_path : &str) -> Vec<Vec<u8>>
                let x = x as usize;
                let y = y as usize;
                //pixel_data[(x + y * width)] = v; //c;
-               pixel_data[(x + y * width)] = v + 0.01; //c;
+               pixel_data[(x + y * width)] = v + 0.001; //c;
                println!("x: {}, y: {}, v: {}", x, y, v);
 
             }
          })
-      }*/
-      let bitmap = g.bitmap();
-      let width = bitmap.width() as usize;
-      let height = bitmap.rows() as usize();
-      let data = bitmap.buffer();
-      let mut vec_tex : Vec<Vec<u8>> = Vec::with_capacity(height); //TODO: Convert &[u8] into a Vec<Vec<u8>>
-      for y in 0..height {
-         vec_tex.push(Vec::with_capacity(width));
-         for x in 0..width {
-            vec_tex[y].push(data[y*width + x]);
-         }
       }
-      return vec_tex;
    }
 
    // Print it out
@@ -185,7 +203,16 @@ fn raster_text(text : &str, font_path : &str) -> Vec<Vec<u8>>
       handle.write(&pixel_data[j*width..(j+1)*width]).unwrap();
       handle.write(b"\n").unwrap();
    }*/
-   (pixel_data, pixel_height, width)
+   let mut vec_tex: Vec<Vec<u8>> = Vec::with_capacity(pixel_height);
+   for y in 0..pixel_height {
+      vec_tex.push(Vec::with_capacity(width)); 
+      for x in 0..width {
+         vec_tex[y].push((pixel_data[y*width + x] * 256.0) as u8);
+      }
+   }
+
+   //(pixel_data, pixel_height, width)
+   (vec_tex, pixel_height, width)
 }
 
 
