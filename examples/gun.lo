@@ -1,0 +1,3 @@
+(define path "examples-data-repo/gun/")
+(define x (shape (+ path "ak.obj") (+ path "AK47.png")))
+(resize x 0.2 0.2)
