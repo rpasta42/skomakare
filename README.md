@@ -48,7 +48,8 @@ What works, what doesn't:
 - [x] text rasterization
    - [x] very ugly comic sans without picking colors
    - [x] fix opposite orientation
-   - [ ] create better-looking fragment shader with gradients
+   - [x] create better-looking fragment shader with gradients
+   - [ ] account for aspect ratio of text, and be able to pass resolution manually
 - [x] changing shapes
    - [x] moving shapes
    - [x] rotating shapes
