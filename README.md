@@ -25,6 +25,7 @@ $ cargo run
 ```
 
 What works, what doesn't:
+- [ ] add tiny sleep on the render thread loop waiting for events
 - [ ] options to create hidden objects
 - [ ] setup script needs to also be able to update examples-data
 - [ ] defining new shaders from string in loscirpt

@@ -1,2 +1,13 @@
+;(l "examples/text.lo")
 (define yo (text "yo"))
 (resize yo 0.3 0.3)
+
+(define run (lambda (n)
+   (if (= n 0)
+      "success"
+      (do (sleep 0.02)
+          (rotate yo (/ pi 15))
+          (move yo 0.008 0)
+          (run (- n 1))))))
+
+(run 100)
