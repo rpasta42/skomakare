@@ -14,6 +14,10 @@ impl ShaderManager {
    pub fn add_defaults(&mut self, display : &Display) {
       self.add_shader(display, "texture".to_string(),
                       VERT_SH_TEXTURE, FRAG_SH_TEXTURE);
+
+      self.add_shader(display, "text".to_string(),
+                      VERT_SH_TEXTURE, FRAG_SH_TEXT);
+
       //self.add_shader(display, "color-red".to_string(), VERT_SH_COLOR, FRAG_SH_COLOR_R);
    }
 
@@ -78,4 +82,20 @@ pub static FRAG_SH_TEXTURE : &'static str = r#"
    }
 "#;
 
+pub static FRAG_SH_TEXT : &'static str = r#"
+   #version 140
+   in vec2 v_tex_coords;
+   out vec4 color;
+
+   uniform sampler2D tex;
+
+   void main() {
+      //color = texture(tex, v_tex_coords);
+      vec4 c = texture(tex, v_tex_coords);
+      if (c[0] > 0)
+         color = vec4(1, 1, 1, 1);
+      else
+         color = vec4(0, 0, 0, 0);
+   }
+"#;
 

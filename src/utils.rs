@@ -77,7 +77,6 @@ pub fn read_bin_file(path_str : &str, mut ret : &mut Vec<u8>) {
    file.read_to_end(&mut ret).unwrap();
 }
 
-
 /*pub fn text_to_texture_freetype(text : String, display : &Display) -> Texture2d
 {
    // FREETYPE TEMP TEST CODE
@@ -205,7 +204,7 @@ fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
    }*/
    let mut vec_tex: Vec<Vec<u8>> = Vec::with_capacity(pixel_height);
    for y in 0..pixel_height {
-      vec_tex.push(Vec::with_capacity(width)); 
+      vec_tex.push(Vec::with_capacity(width));
       for x in 0..width {
          vec_tex[y].push((pixel_data[y*width + x] * 256.0) as u8);
       }

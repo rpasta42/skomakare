@@ -5,6 +5,7 @@
 
 [Drawing circle from triangles](https://github.com/KostyaKow/skomakare/blob/master/examples/circle.lo)
 
+For rendering text, you need to install comic sans ttf font (sudo apt-get install ttf-mscorefonts-installer).
 
 ```scheme
 $ cargo run
@@ -31,6 +32,7 @@ What works, what doesn't:
       - [ ] primitive shape constructed in rust
       - [x] can construct circle with triangles from loscript (very slow)
 - [ ] colors/textures
+   - [ ] texture compiled from string and added to shader manager from loscript.
    - [x] red, green & blue
    - [ ] custom color from rgb
    - [x] texture from png file (works for triangles and squares)
@@ -54,7 +56,7 @@ What works, what doesn't:
    - [ ] lisp shaders
    - [ ] check out stuff from [logo](https://en.wikipedia.org/wiki/Logo_%28programming_language%29)
 - [ ] custom shapes with points, lines or trianges from loscript
-   - [ ] PrimitiveType::Points 
+   - [ ] PrimitiveType::Points
 
 old todo:
 

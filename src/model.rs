@@ -310,10 +310,11 @@ impl Model {
          Some(img_path_to_texture(img_path, display))
       } else if let Some(t) = self.text.clone() { //todo: fix texture type and stuff
          texture_type = TextureType::Image;
-         self.shader_name = Some("texture".to_string());
+         //self.shader_name = Some("texture".to_string());
+         self.shader_name = Some("text".to_string());
          Some(text_to_texture(t, display))
       } else { None };
-      
+
       if texture_type == TextureType::None {
          panic!("Model needs to either have color or img_path");
       }
