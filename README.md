@@ -25,10 +25,15 @@ $ cargo run
 ```
 
 What works, what doesn't:
+- [ ] options to create hidden objects
+- [ ] setup script needs to also be able to update examples-data
+- [ ] defining new shaders from string in loscirpt
 - [ ] Making basic shapes with colors
+   - [ ] check-exists function (?? forgot what this note is about)
    - [x] triangle
    - [x] square
-   - [ ] circle
+   - [x] circle
+      - [x] can export blender circle to obj after triangulation
       - [ ] primitive shape constructed in rust
       - [x] can construct circle with triangles from loscript (very slow)
 - [ ] colors/textures
@@ -39,12 +44,17 @@ What works, what doesn't:
    - [ ] texture from jpeg
    - [ ] add changecolor for existing project
    - [ ] setting clearcolor from loscript
+- [x] text rasterization
+   - [x] very ugly comic sans without picking colors
+   - [x] fix opposite orientation
+   - [ ] create better-looking fragment shader with gradients
 - [x] changing shapes
    - [x] moving shapes
    - [x] rotating shapes
    - [x] scaling shapes
    - [x] setting shape position
    - [ ] setting rotation
+   - [ ] flip function (x and y)
    - [ ] setting scale
    - [ ] add get_pos, get_rot, get_scale to loscript
 - [ ] scene manager

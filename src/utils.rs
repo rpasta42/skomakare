@@ -117,7 +117,9 @@ pub fn read_bin_file(path_str : &str, mut ret : &mut Vec<u8>) {
 //https://github.com/PistonDevelopers/image
 pub fn text_to_texture(text : String, display : &Display) -> Texture2d
 {
-   let font_path = "/usr/share/fonts/truetype/msttcorefonts/comic.ttf";
+   //let font_path = "/usr/share/fonts/truetype/msttcorefonts/comic.ttf";
+   let font_path = "examples-data-repo/text/comic.ttf";
+
    let (pixels, height, width) = raster_text(&*text, font_path);
    /*let mut imgbuf = image::ImageBuffer::new(width as u32, height as u32);
    for (x_, y_, pixel) in imgbuf.enumerate_pixels_mut() {
@@ -187,8 +189,10 @@ fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
                let x = x as usize;
                let y = y as usize;
                //pixel_data[(x + y * width)] = v; //c;
-               pixel_data[(x + y * width)] = v + 0.001; //c;
-               println!("x: {}, y: {}, v: {}", x, y, v);
+               //pixel_data[(x + y * width)] = v + 0.001; //c;
+               pixel_data[(y * width + width - x - 1)] = v + 0.001; //c;
+
+               //println!("x: {}, y: {}, v: {}", x, y, v);
 
             }
          })

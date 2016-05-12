@@ -68,7 +68,7 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver,
 
       Sexps::Int(id)
    };
-   env.borrow_mut().table_add_f("text", draw_text);
+   env.borrow_mut().table_add_f("draw-text-opposite", draw_text);
 
    let sender_shape = sender.clone();
    let shape_ = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
@@ -210,7 +210,7 @@ fn main() {
    for i in 0..1000 { id_t.send(i).unwrap(); }
 
    let (text_id_t, text_id_r) : (IdSender, IdReceiver) = channel();
-   for i in 0..1000 { text_id_t.send(i).unwrap(); }
+   for i in 1001..2000 { text_id_t.send(i).unwrap(); }
 
    let (cmd_t, cmd_r) : (CmdSender, CmdReceiver) = channel();
    let (event_t, event_r) : (EventSender, EventReceiver) = channel();

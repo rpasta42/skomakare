@@ -92,7 +92,7 @@ pub static FRAG_SH_TEXT : &'static str = r#"
    void main() {
       //color = texture(tex, v_tex_coords);
       vec4 c = texture(tex, v_tex_coords);
-      if (c[0] > 0)
+      if (c[0] > 0.5)
          color = vec4(1, 1, 1, 1);
       else
          color = vec4(0, 0, 0, 0);

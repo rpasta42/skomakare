@@ -11,3 +11,7 @@
 (define triangle-fan (lambda (color) (shape "triangle-fan" color)))
 
 (define test-loop (lambda () (do (print "got here ok") (sleep 2))))
+(define text (lambda (str) (do
+   (define myword (draw-text-opposite str))
+   (rotate myword pi)
+   myword)))
