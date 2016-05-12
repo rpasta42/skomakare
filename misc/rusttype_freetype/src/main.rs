@@ -25,8 +25,7 @@ fn write_text(text : &str, font_path : &str) {
    let font = collection.into_font().unwrap(); // only succeeds if collection consists of one font
 
    // Desired font pixel height
-   //let height: f32 = 12.4; // to get 80 chars across (fits most terminals); adjust as desired
-   let height: f32 = 40.0; // to get 80 chars across (fits most terminals); adjust as desired
+   let height: f32 = 12.4; // to get 80 chars across (fits most terminals); adjust as desired
 
    let pixel_height = height.ceil() as usize;
 

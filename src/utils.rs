@@ -160,7 +160,7 @@ fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
 
    //let height: f32 = 12.4; // to get 80 chars across (fits most terminals); adjust as desired
    //kk version
-   let height: f32 = 90.0; // to get 80 chars across (fits most terminals); adjust as desired
+   let height: f32 = 500.0; // to get 80 chars across (fits most terminals); adjust as desired
 
    let pixel_height = height.ceil() as usize;
 
@@ -179,7 +179,7 @@ fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
                   .map(|b| b.min.x as f32 + g.unpositioned().h_metrics().advance_width))
       .next().unwrap_or(0.0).ceil() as usize;
 
-   println!("width: {}, height: {}", width, pixel_height);
+   //println!("width: {}, height: {}", width, pixel_height);
 
    //KK in opengl, 0 to 1 color
    // Rasterise directly into ASCII art.
@@ -188,7 +188,7 @@ fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
 
    //let mapping = b"0123456789"; // The approximation of greyscale
    //let mapping = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];//b"\0\1\2\3\4\5\6\7\8\9";
-   let mapping = &float_range(0.0, 0.001, 1.0);
+   let mapping = &float_range(0.0, 0.01, 1.0);
    let mapping_scale = (mapping.len()-1) as f32;
    for g in glyphs {
       if let Some(bb) = g.pixel_bounding_box() {
@@ -215,8 +215,10 @@ fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
 
                //pixel_data[(y * width + width - x - 1)] = v + 0.00; // c
                //pixel_data[(y * width + width - x - 1)] = (i as f32/200.0 - 0.1) * 256.0; //n * 256.0;
-               println!("{}", c * 256.0);
-               pixel_data[(y*width + width-x-1)] = c * 256.0; //n * 256.0;
+               //pixel_data[(y*width + width-x-1)] = c * 256.0; //n * 256.0;
+               let z = if v < 0.0 { 0.0 } else if v > 0.9 { 0.99 } else { v };
+
+               pixel_data[(y*width + width-x-1)] =  z * 255.0; //n * 256.0;
 
                //println!("x: {}, y: {}, v: {}", x, y, v);
 
