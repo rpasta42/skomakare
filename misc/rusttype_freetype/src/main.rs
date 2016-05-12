@@ -25,7 +25,9 @@ fn write_text(text : &str, font_path : &str) {
    let font = collection.into_font().unwrap(); // only succeeds if collection consists of one font
 
    // Desired font pixel height
-   let height: f32 = 12.4; // to get 80 chars across (fits most terminals); adjust as desired
+   //let height: f32 = 12.4; // to get 80 chars across (fits most terminals); adjust as desired
+   let height: f32 = 40.0; // to get 80 chars across (fits most terminals); adjust as desired
+
    let pixel_height = height.ceil() as usize;
 
    // 2x scale in x direction to counter the aspect ratio of monospace characters.
@@ -52,7 +54,9 @@ fn write_text(text : &str, font_path : &str) {
    //KK in opengl, 0 to 1 color
    // Rasterise directly into ASCII art.
    let mut pixel_data = vec![b'@'; width * pixel_height];
-   let mapping = b"@%#x+=:-. "; // The approximation of greyscale
+   //let mapping = b"@%#x+=:-. "; // The approximation of greyscale
+   let mapping = b"0123456789"; // The approximation of greyscale
+
    let mapping_scale = (mapping.len()-1) as f32;
    for g in glyphs {
       if let Some(bb) = g.pixel_bounding_box() {

@@ -136,6 +136,16 @@ pub fn text_to_texture(text : String, display : &Display) -> Texture2d
    Texture2d::new(display, pixels).unwrap()
 }
 
+fn float_range(start : f32, step : f32, end : f32) -> Vec<f32> {
+   let mut i = start;
+   let mut ret = Vec::new();
+   while i < end {
+      ret.push(i);
+      i += step;
+   }
+   ret
+}
+
 // (pixel_data, pixel_height, width)
 fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
 -> (Vec<Vec<u8>>, usize, usize)
@@ -148,7 +158,10 @@ fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
    let collection = FontCollection::from_bytes(&font_data as &[u8]);
    let font = collection.into_font().unwrap();
 
-   let height: f32 = 12.4; // to get 80 chars across (fits most terminals); adjust as desired
+   //let height: f32 = 12.4; // to get 80 chars across (fits most terminals); adjust as desired
+   //kk version
+   let height: f32 = 90.0; // to get 80 chars across (fits most terminals); adjust as desired
+
    let pixel_height = height.ceil() as usize;
 
    // 2x scale in x direction to counter the aspect ratio of monospace characters.
@@ -173,7 +186,9 @@ fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
    let mut pixel_data = vec![0.0; width * pixel_height];
    //let mut pixel_data = vec![b'@'; width * pixel_height];
 
-   let mapping = b"@%#x+=:-. "; // The approximation of greyscale
+   //let mapping = b"0123456789"; // The approximation of greyscale
+   //let mapping = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];//b"\0\1\2\3\4\5\6\7\8\9";
+   let mapping = &float_range(0.0, 0.001, 1.0);
    let mapping_scale = (mapping.len()-1) as f32;
    for g in glyphs {
       if let Some(bb) = g.pixel_bounding_box() {
@@ -181,7 +196,7 @@ fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
             // v should be in the range 0.0 to 1.0
             let i = (v*mapping_scale + 0.5) as usize;
             // so something's wrong if you get $ in the output.
-            let c = mapping.get(i).cloned().unwrap_or(b'$');
+            let c = mapping.get(i).cloned().unwrap_or(0.0);//(b'$');
             let x = x as i32 + bb.min.x;
             let y = y as i32 + bb.min.y;
             // There's still a possibility that the glyph clips the boundaries of the bitmap
@@ -190,7 +205,18 @@ fn raster_text(text : &str, font_path : &str) //-> (Vec<f32>, usize, usize)
                let y = y as usize;
                //pixel_data[(x + y * width)] = v; //c;
                //pixel_data[(x + y * width)] = v + 0.001; //c;
-               pixel_data[(y * width + width - x - 1)] = v + 0.001; //c;
+               /*println!("{}", c);
+               let n = match c as char {
+                  '0' => 0.0, '1' => 0.1, '2' => 0.2,
+                  '3' => 0.3, '4' => 0.4, '5' => 0.5,
+                  '6' => 0.6, '7' => 0.7, '8' => 0.8, '9' => 0.9,
+                  _ => 1.0
+               };*/
+
+               //pixel_data[(y * width + width - x - 1)] = v + 0.00; // c
+               //pixel_data[(y * width + width - x - 1)] = (i as f32/200.0 - 0.1) * 256.0; //n * 256.0;
+               println!("{}", c * 256.0);
+               pixel_data[(y*width + width-x-1)] = c * 256.0; //n * 256.0;
 
                //println!("x: {}, y: {}, v: {}", x, y, v);
 
