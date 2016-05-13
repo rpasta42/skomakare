@@ -69,6 +69,7 @@ What works, what doesn't:
    - [ ] check out stuff from [logo](https://en.wikipedia.org/wiki/Logo_%28programming_language%29)
 - [ ] custom shapes with points, lines or trianges from loscript
    - [ ] PrimitiveType::Points
+- [ ] https://en.wikipedia.org/wiki/Octree http://www.gamedev.net/page/resources/_/technical/game-programming/introduction-to-octrees-r3529
 
 old todo:
 
