@@ -15,3 +15,13 @@
    (define myword (draw-text-opposite str))
    (rotate myword pi)
    myword)))
+
+;standard shape-or-text-opposite
+(define shape (lambda (shape color)
+   (shape-or-text "shape" shape color)))
+(define draw-text-opposite (lambda (str)
+   (shape-or-text "text" str)))
+
+
+
+

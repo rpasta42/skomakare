@@ -5,6 +5,7 @@
    (resize square 0.29 0.29)
    (move square -0.5 0.3))))
 
+
 (define get-squares (lambda (color)
    (loop 9 (lambda () (square color)))))
 
@@ -26,7 +27,7 @@
    (define squares (get-squares init-color))
    (map (lambda (x) (normalize-square x)) squares)
    (define fold_f (lambda (square n) (do
-      (print (+ "current n:" n " square: " square))
+;      (print (+ "current n:" n " square: " square))
       (define xy (square-index-to-xy n))
       (set-square-pos square (car xy) (cdr xy))
       (+ n 1))))
@@ -40,16 +41,30 @@
 (define get-square (lambda (board x) (list-ref board x)))
 
 ;pass item = (cons "player-color" squaren) -> return player who won
-(define check-3 (lambda (a b c) (do
-   (define player-abc (map (lambda (square) (get-player square)) (cons a (cons b (cons c nil)))))
+;(define check-3 (lambda (a b c) (do
+;   (define player-abc (map (lambda (square) (get-player square)) (cons a (cons b (cons c nil)))))
 ;   (print (+ "checking " (list-ref player-abc 0) " " (list-ref player-abc 1) " " (list-ref player-abc 2)))
-   (define first (car player-abc))
-   (if (apply = player-abc)
-      first
+;   (define first (car player-abc))
+;   (if (apply = player-abc)
+;      first
+;      "e"))))
+
+(define check-3 (lambda (a b c) (do
+   (if (= (get-player a) (get-player b) (get-player c))
+     (get-player a)
       "e"))))
 
+;with extra lambda table:   119, 156, 191, 211, 272
+;with lambda optimizations: 111, 150, 169, 179, 211
 ;TODO: make this work for vertical and horizontal
 (define check-winner (lambda (board) (do
+   (define start (get-time))
+   (define ret (check-winner-real board))
+   (define end (get-time))
+   (print (+ "check winner took: " (round (- end start) 0) " millis"))
+   ret)))
+
+(define check-winner-real (lambda (board) (do
 ;   (define rows
 ;      (map (lambda (x) (do
 ;               (define n (* x 3))
@@ -126,8 +141,8 @@
             (if (and (> y row-3-y-start) (< y row-3-y-end))
                2
                -1))))
-   (print (+ "col-click: " col-click))
-   (print (+ "row-click: " row-click))
+;   (print (+ "col-click: " col-click))
+;   (print (+ "row-click: " row-click))
    (if (or (= row-click -1) (= col-click -1))
       -1
       (+ (* row-click 3) col-click)))))
@@ -148,8 +163,10 @@
 
 (define test-loop (lambda () (do (print "got here ok") (sleep 2))))
 
+(define data-dir "examples-data-repo/tictactoe/")
+
 (define get-square-color (lambda (player)
-   (if (= player "w") "resources/x.png" (if (= player "b") "resources/o.png" red))))
+   (if (= player "w") (+ data-dir "x.png") (if (= player "b") (+ data-dir "o.png") red))))
 
 (define p-to-name (lambda (p) (if (= p "w") "x" "o")))
 
@@ -161,7 +178,7 @@
          (sleep 0.1)
          (define clicks (get-mouse-clicks))
          (define clicked-square (map-click-to-square (car clicks) (cdr clicks)))
-         (print (+ "clicked on square " clicked-square))
+;         (print (+ "clicked on square " clicked-square))
          (if (test-ok-move board clicked-square)
             (do (define move-square (get-square board clicked-square))
                 (define xy (square-index-to-xy (+ 1 clicked-square)))
@@ -175,11 +192,14 @@
                   (do (play (- n 1)
                             new-board
                             (get-next-player p-turn)))
-                  (print (+ (p-to-name p-turn) " won!!!"))))
-            (do (print "not ok move")
-                (play (- n 1) board p-turn)))))))
+                  (do (define winner-text (+ (p-to-name p-turn) " won!!!"))
+                      (print winner-text)
+                      (text winner-text))))
+            (play (- n 1) board p-turn))))))
 
-(define print-board (lambda (board) (do
+(define print-board (lambda (x) 0))
+
+(define print-board1 (lambda (board) (do
    (define str-brd
       (fold (lambda (square init_str) (+ init_str " " (car square)))
             ""

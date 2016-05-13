@@ -52,15 +52,44 @@ type IdReceiver = Receiver<ObjId>;
 
 #[allow(unused_variables)]
 fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver,
-                         id_r : IdReceiver, id_r_text : IdReceiver) -> RefCell<Env> {
+                         id_r : IdReceiver) -> RefCell<Env> {
    let env = lambda_oxide::main::setup_env();
 
-   let sender_draw_text = sender.clone();
+   let sender_shape_or_text = sender.clone();
+   let shape_or_text = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
+      let args = arg_extractor(&args_).unwrap();
+      if args.len() < 1 { return err("shape-or-text needs at least 1 argument"); }
+      let draw_type = arg_extract_str(&args, 0).unwrap();
+
+      if draw_type == "text" {
+         if args.len() != 2 { return err("text needs 1 argument"); }
+         let text = arg_extract_str(&args, 1).unwrap(); //TODO: check types
+         let id = id_r.recv().unwrap();
+
+         let cmd = GameCmd::Text(id, text);
+         sender_shape_or_text.send(cmd).unwrap();
+         Sexps::Int(id)
+      }
+      else if draw_type == "shape" {
+         if args.len() != 3 { return err("shape needs 2 arguments"); }
+         let id = id_r.recv().unwrap();
+         let shape_type = arg_extract_str(&args, 1).unwrap(); //TODO: check types
+         let color_type = arg_extract_str(&args, 2).unwrap(); //and notify user if wrong
+
+         let cmd = GameCmd::Obj(id, shape_type, color_type);
+         sender_shape_or_text.send(cmd).unwrap();
+
+         Sexps::Int(id)
+      } else { err("bad type of shape to draw") }
+   };
+   env.borrow_mut().table_add_f("shape-or-text", shape_or_text);
+
+   /*let sender_draw_text = sender.clone();
    let draw_text = move |args_ : Sexps, root : Root, table : EnvId| -> Sexps {
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 1 { return err("text needs 1 arguments"); }
 
-      let id = id_r.recv().unwrap();
+      let id = id_r_text.recv().unwrap();
       let text = arg_extract_str(&args, 0).unwrap(); //TODO: check types
 
       let cmd = GameCmd::Text(id, text);
@@ -75,7 +104,7 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver,
       let args = arg_extractor(&args_).unwrap();
       if args.len() != 2 { return err("shape needs 2 arguments"); }
 
-      let id = id_r_text.recv().unwrap();
+      let id = id_r.recv().unwrap();
       let shape_type = arg_extract_str(&args, 0).unwrap(); //TODO: check types
       let color_type = arg_extract_str(&args, 1).unwrap(); //and notify user if wrong
 
@@ -84,7 +113,7 @@ fn setup_game_script_env(sender : CmdSender, event_r : EventReceiver,
 
       Sexps::Int(id)
    };
-   env.borrow_mut().table_add_f("shape", shape_);
+   env.borrow_mut().table_add_f("shape", shape_);*/
 
    let sender_move = sender.clone();
    //object_name, x, y
@@ -209,16 +238,13 @@ fn main() {
    let (id_t, id_r) : (IdSender, IdReceiver) = channel();
    for i in 0..1000 { id_t.send(i).unwrap(); }
 
-   let (text_id_t, text_id_r) : (IdSender, IdReceiver) = channel();
-   for i in 1001..2000 { text_id_t.send(i).unwrap(); }
-
    let (cmd_t, cmd_r) : (CmdSender, CmdReceiver) = channel();
    let (event_t, event_r) : (EventSender, EventReceiver) = channel();
 
    let child = Builder::new().stack_size(8*32*1024*1024).spawn(move || {
       use lambda_oxide::main;
 
-      let env = setup_game_script_env(cmd_t, event_r, id_r, text_id_r);
+      let env = setup_game_script_env(cmd_t, event_r, id_r);
       main::interpreter(Some(env));
    }).unwrap();
 
@@ -226,6 +252,10 @@ fn main() {
    loop {
       let mut cmds = Vec::new();
       //let script_cmd_res = cmd_r.try_recv();
+
+      use std::thread::sleep_ms;
+      sleep_ms(10);
+
       while let Ok(cmd) = cmd_r.try_recv() {
          cmds.push(cmd);
       }
