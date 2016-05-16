@@ -171,17 +171,8 @@ fn raster_text(text : &str, font_path : &str, height_opt : Option<f32>) -> (Vec<
    for g in glyphs {
       if let Some(bb) = g.pixel_bounding_box() {
          g.draw(|x, y, v| {
-            /*println!("x original: {}", bb.min.x);
-            let x = x as i32 + bb.min.x;
-            let y = y as i32 + bb.min.y;
-            let x = if x < 0 { 0 } else { x as usize };
-            let y = if y < 0 { 0 } else { y as usize }; */
-
             let x = (x as i32 + extra as i32 + bb.min.x) as usize;
             let y = (y as i32 + bb.min.y) as usize;
-
-            //println!("y : {}, width: {}, x: {}", y, width, x);
-            // v should be in the range 0.0 to 1.0
             pixel_data[(y*width + width-x-1)] =  v /* *255.0*/;
          })
       }
