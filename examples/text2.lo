@@ -1,0 +1,26 @@
+
+(define get-key (lambda () (do
+   (define events (check_events))
+   (if (null? events)
+      nil
+      (if (= (car events) "key")
+         (cdr events)
+         nil)))))
+
+(define run (lambda (iter keys) (if (= iter 0) "done" (do
+   (define key (get-key))
+   (define new-keys
+      (if (not (null? key))
+         (do (define new-id (text key))
+             (define ret (cons new-id keys))
+             (resize new-id 0.3 0.3)
+             (map (lambda (x) (move x 0 0.3)) ret)
+             ret)
+         keys))
+
+   (sleep 0.2)
+   (run (- iter 1) new-keys)))))
+
+(run 300 nil)
+
+

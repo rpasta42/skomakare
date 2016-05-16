@@ -5,7 +5,7 @@ use std::io::Write;
 
 fn main() {
    //usr/share/fonts/truetype/
-   write_text("hello", "/usr/share/fonts/truetype/msttcorefonts/comic.ttf");
+   write_text("jyhello", "/usr/share/fonts/truetype/msttcorefonts/comic.ttf");
 }
 
 pub fn read_bin_file(path_str : &str, mut ret : &mut Vec<u8>) {
