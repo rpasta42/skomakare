@@ -2,4 +2,4 @@
 *.swp
 Cargo.lock
 target
-examples-data-repo
+assets

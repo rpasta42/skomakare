@@ -118,7 +118,7 @@ pub fn read_bin_file(path_str : &str, mut ret : &mut Vec<u8>) {
 pub fn text_to_texture(text : String, display : &Display) -> Texture2d
 {
    //let font_path = "/usr/share/fonts/truetype/msttcorefonts/comic.ttf";
-   let font_path = "examples-data-repo/text/comic.ttf";
+   let font_path = "assets/text/comic.ttf";
 
    let (pixels, height, width) = raster_text(&*text, font_path, None);
    //println!("height: {}, width: {}", height, width);

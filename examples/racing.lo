@@ -1,5 +1,5 @@
 
-(define car1 (shape "examples-data-repo/racing/car-uv.obj" "examples-data-repo/racing/car.png"))
+(define car1 (shape "assets/racing/car-uv.obj" "assets/racing/car.png"))
 (resize car1 0.06 0.06)
 (move car1 0.5 0.2)
 
@@ -32,7 +32,7 @@
    (rotate wheel2 rot-angle-rad))))
 
 ;(define car2 (shape "car.obj" "resources/opengl.png"))
-(define car2 (shape "examples-data-repo/racing/car-uv.obj" "examples-data-repo/racing/car.png"))
+(define car2 (shape "assets/racing/car-uv.obj" "assets/racing/car.png"))
 (resize car2 0.06 0.06)
 (move car2 0.5 -0.2)
 

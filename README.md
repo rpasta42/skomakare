@@ -8,7 +8,7 @@
 For rendering text, you need to install comic sans ttf font (sudo apt-get install ttf-mscorefonts-installer).
 
 ```scheme
-$ cargo run
+$ ./setup.sh; cargo run
 **>(l "circle.lo")
 **>(l "tictactoe.lo")
 **>(define my-triangle (triangle red))
@@ -25,9 +25,7 @@ $ cargo run
 ```
 
 What works, what doesn't:
-- [ ] add tiny sleep on the render thread loop waiting for events
 - [ ] options to create hidden objects
-- [ ] setup script needs to also be able to update examples-data
 - [ ] defining new shaders from string in loscirpt
 - [ ] Making basic shapes with colors
    - [ ] check-exists function (?? forgot what this note is about)
@@ -59,11 +57,13 @@ What works, what doesn't:
    - [ ] flip function (x and y)
    - [ ] setting scale
    - [ ] add get_pos, get_rot, get_scale to loscript
+- [x] add tiny sleep on the render thread loop waiting for events
 - [ ] scene manager
    - [ ] connecting rust scenemanager to loscript
    - [ ] quadtrees
 - [x] mouse and keyboard input
    - Very basic, needs a re-write
+- [x] setup script needs to also be able to update examples-data
 - [ ] misc
    - [ ] lisp shaders
    - [ ] check out stuff from [logo](https://en.wikipedia.org/wiki/Logo_%28programming_language%29)

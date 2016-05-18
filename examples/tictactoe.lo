@@ -163,7 +163,7 @@
 
 (define test-loop (lambda () (do (print "got here ok") (sleep 2))))
 
-(define data-dir "examples-data-repo/tictactoe/")
+(define data-dir "assets/tictactoe/")
 
 (define get-square-color (lambda (player)
    (if (= player "w") (+ data-dir "x.png") (if (= player "b") (+ data-dir "o.png") red))))
