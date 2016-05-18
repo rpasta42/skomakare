@@ -4,19 +4,6 @@ use types::*;
 use glium::texture::{Texture2d, RawImage2d};
 use std::io::Cursor;
 
-#[allow(dead_code)]
-pub fn char_at(s : &str, n : usize) -> Option<char> {
-   for (i, c) in s.chars().enumerate() {
-      if i == n { return Some(c) }
-   } return None
-}
-
-pub fn s_to_f(s : &str) -> f32 {
-   s.parse::<f32>().unwrap()
-}
-pub fn s_to_usize(s : &str) -> usize {
-   s.parse::<usize>().unwrap()
-}
 /*#[allow(dead_code)]
 pub fn read_bin_file(path_str : &str) -> [u8; 12] {
    use std::fs::File;
@@ -27,27 +14,6 @@ pub fn read_bin_file(path_str : &str) -> [u8; 12] {
    file.read(&mut buf).unwrap();
    return buf;
 }*/
-
-#[allow(dead_code)]
-pub fn read_file(path_str : &str) -> Option<String> {
-   use std::io::prelude::*;
-   use std::fs::File;
-   use std::path::Path;
-   use std::error::Error;
-
-   println!("loading file {}", path_str);
-   let path = Path::new(path_str);
-   match File::open(&path) {
-      Ok(mut file) => {
-         let mut file_content = String::new();
-         match file.read_to_string(&mut file_content) {
-            Ok(_) => Some(file_content.to_string()),
-            Err(why) => { panic!("{}", Error::description(&why)) }
-         }
-      }
-      Err(why) => { panic!("{}", Error::description(&why)) }
-   }
-}
 
 
 //&include_bytes!("path")[..]
@@ -68,14 +34,6 @@ pub fn img_path_to_texture(img_path : String, display : &Display) -> Texture2d {
 }
 
 //texture
-//https://doc.rust-lang.org/std/io/trait.Read.html
-pub fn read_bin_file(path_str : &str, mut ret : &mut Vec<u8>) {
-   use std::fs::File;
-   use std::io::Read;
-
-   let mut file = File::open(path_str).unwrap();
-   file.read_to_end(&mut ret).unwrap();
-}
 
 /*pub fn text_to_texture_freetype(text : String, display : &Display) -> Texture2d
 {
@@ -124,16 +82,6 @@ pub fn text_to_texture(text : String, display : &Display) -> Texture2d
    //println!("height: {}, width: {}", height, width);
 
    Texture2d::new(display, pixels).unwrap()
-}
-
-fn float_range(start : f32, step : f32, end : f32) -> Vec<f32> {
-   let mut i = start;
-   let mut ret = Vec::new();
-   while i < end {
-      ret.push(i);
-      i += step;
-   }
-   ret
 }
 
 // (pixel_data, pixel_height, width)
