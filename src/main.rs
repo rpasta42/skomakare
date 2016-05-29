@@ -3,8 +3,9 @@ extern crate rusttype;
 #[macro_use]
 extern crate glium;
 extern crate image;
-extern crate lambda_oxide;
 extern crate libc;
+extern crate lambda_oxide;
+extern crate oxicloak;
 
 use glium::glutin::Event;
 

@@ -3,7 +3,7 @@ use shaders::*;
 use utils::{img_path_to_texture, text_to_texture};
 use glium::texture::Texture2d;
 use glium::backend::glutin_backend::GlutinFacade;
-
+use oxicloak::{read_file, s_to_usize, s_to_f32};
 use glium::index::PrimitiveType;
 
 
@@ -87,8 +87,6 @@ impl Shape {
       Shape { vertices : vertices_, primitive_type : Some(primitive_type) }
    }
    pub fn from_obj_file(&mut self, path : &str) {
-      use utils::{read_file, s_to_usize, s_to_f};
-
       let data = read_file(path).unwrap();
 
       let mut verts = Vec::new();
@@ -105,7 +103,7 @@ impl Shape {
                println!("bad line: {}", line);
             } else {
                let v = ColorVertex {
-                  pos: [s_to_f(words[1]), s_to_f(words[2])],
+                  pos: [s_to_f32(words[1]), s_to_f32(words[2])],
                   tex_pos : [0.0, 0.0]
                };
                verts.push(v);
@@ -150,7 +148,6 @@ impl Shape {
       self.primitive_type = Some(PrimitiveType::TrianglesList);
    }
    pub fn from_obj_file_uv_texture(&mut self, path : &str) {
-      use utils::{read_file, s_to_usize, s_to_f};
 
       let data = read_file(path).unwrap();
 
@@ -167,18 +164,18 @@ impl Shape {
             "#" => continue,
             "vt" => {
                if words.len() != 3 { println!("bad number of args to vt: {}", line); }
-               vt.push([s_to_f(words[1]), s_to_f(words[2])]);
+               vt.push([s_to_f32(words[1]), s_to_f32(words[2])]);
             },
             "v" => {
                if words.len() != 4 {
                   println!("bad line: {}", line);
                } else {
                   /*let v = ColorVertex {
-                     pos: [s_to_f(words[1]), s_to_f(words[2])],
+                     pos: [s_to_f32(words[1]), s_to_f32(words[2])],
                      tex_pos : [0.0, 0.0]
                   };
                   verts.push(v);*/
-                  verts.push([s_to_f(words[1]), s_to_f(words[2])]);
+                  verts.push([s_to_f32(words[1]), s_to_f32(words[2])]);
                }
             },
             "f" => {

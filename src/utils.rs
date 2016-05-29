@@ -89,9 +89,13 @@ fn raster_text(text : &str, font_path : &str, height_opt : Option<f32>) -> (Vec<
 {
    use rusttype::{FontCollection, Scale, point, PositionedGlyph};
    use std::io::Write;
+   use oxicloak::read_bin_file;
 
-   let mut font_data = Vec::new();
-   read_bin_file(font_path, &mut font_data);
+   //TODO: deleteme
+   //let mut font_data = Vec::new();
+   //read_bin_file(font_path, &mut font_data);
+   let font_data = read_bin_file(font_path).unwrap();
+
    let collection = FontCollection::from_bytes(&font_data as &[u8]);
    let font = collection.into_font().unwrap();
 
