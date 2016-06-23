@@ -79,4 +79,4 @@ old todo:
    - [ ] Add pos, rot, scale
    - [ ] https://doc.rust-lang.org/book/iterators.html
 
-
+License: GPLv2+
