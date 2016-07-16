@@ -1,5 +1,5 @@
 
-2D Graphics environment with a custom scheme-like scripting language called [lambda-oxide](https://github.com/KostyaKow/LambdaOxide). The main aim of the project is to teach lisp to kids and introduce people to progamming. Skomakare is written in rust and uses glium.
+2D Graphics environment with a custom scheme-like scripting language called [lambda-oxide](https://github.com/KostyaKow/LambdaOxide). The main aim of the project is to teach fundamentals of programming to kids and introduce beginner programmers to lisp. Skomakare is written in rust and uses glium.
 
 [Example Tic Tac Toe game](https://github.com/KostyaKow/skomakare/blob/master/examples/tictactoe.lo)
 
