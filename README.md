@@ -5,7 +5,25 @@
 
 [Drawing circle from triangles](https://github.com/KostyaKow/skomakare/blob/master/examples/circle.lo)
 
-For rendering text, you need to install comic sans ttf font (sudo apt-get install ttf-mscorefonts-installer).
+For rendering text, you need to install comic sans ttf font (`sudo apt-get install ttf-mscorefonts-installer`).
+
+###Tutorial
+
+Draw a square
+
+```scheme
+**> (square red)
+**> (square blue)
+**> (square "resources/texture.png")
+```
+
+If we want to modify a shape after initially creating it, then you need to save the shape to a variable name.
+
+```scheme
+(define my-square (square blue))
+(rotate my-square (/ pi 10))
+(move my-square 0.3 0.3)
+```
 
 ```scheme
 $ ./setup.sh; cargo run
