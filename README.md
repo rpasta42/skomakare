@@ -7,7 +7,7 @@
 
 For rendering text, you need to install comic sans ttf font (`sudo apt-get install ttf-mscorefonts-installer`).
 
-###Tutorial
+### Tutorial
 
 Draw a square
 
@@ -42,6 +42,7 @@ $ ./setup.sh; cargo run
 **>(rotate-square 1000)
 ```
 
+### TODO
 What works, what doesn't:
 - [ ] options to create hidden objects
 - [ ] defining new shaders from string in loscirpt
