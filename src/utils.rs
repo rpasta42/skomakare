@@ -3,6 +3,7 @@ extern crate image;
 use types::*;
 use glium::texture::{Texture2d, RawImage2d};
 use std::io::Cursor;
+use std::io::BufReader;
 
 /*#[allow(dead_code)]
 pub fn read_bin_file(path_str : &str) -> [u8; 12] {
@@ -19,8 +20,14 @@ pub fn read_bin_file(path_str : &str) -> [u8; 12] {
 //&include_bytes!("path")[..]
 fn img_path_to_image<'a>(img_path : &str) -> RawImage2d<'a, u8> {
    use std::fs::File;
-   let mut c = File::open(img_path).unwrap();
+
    //let c = Cursor::new(&include_bytes!("../data/opengl.png")[..]);
+
+   /* LATEST RUST BROKE
+   let mut c = File::open(img_path).unwrap();
+   */
+   let mut f = File::open(img_path).unwrap();
+   let mut c = BufReader::new(f);
 
    let image = image::load(c, image::PNG).unwrap().to_rgba();
    //let image = image::load(c, image::JPEG).unwrap().to_rgba();
